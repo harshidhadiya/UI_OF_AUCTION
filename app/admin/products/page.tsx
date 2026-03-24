@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { auth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+import AdminNavbar from '@/components/AdminNavbar';
 
 export default function AdminProductsDashboard() {
   const [products, setProducts] = useState<any[]>([]);
@@ -66,7 +67,7 @@ export default function AdminProductsDashboard() {
     try {
       const res = await api.post(`/api/verify/products`, filterPayload, false, token!);
       if (res.success) {
-        console.log(res.data)
+
         const dataArr = (res.data as any[]) || [];
         setHasMore(dataArr.length === 10);
         setProducts(prev => isLoadMore ? [...prev, ...dataArr] : dataArr);
@@ -120,18 +121,8 @@ export default function AdminProductsDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight">Admin <span className="text-red-500">Dashboard</span></h1>
-          <div className="flex gap-4">
-            <button onClick={() => router.push('/admin/dashboard')} className="text-sm font-medium hover:text-red-400 transition-colors">Users</button>
-            <button onClick={() => router.push('/admin/products')} className="text-sm font-bold text-red-500 hover:text-red-400 transition-colors">Products</button>
-            <button onClick={() => router.push('/profile')} className="text-sm font-medium hover:text-red-400 transition-colors">My Profile</button>
-            <button onClick={() => auth.logout()} className="text-sm font-medium hover:text-red-400 transition-colors">Logout</button>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-slate-50 page-enter">
+      <AdminNavbar />
 
       <main className="max-w-7xl mx-auto p-8">
         <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -229,7 +220,7 @@ export default function AdminProductsDashboard() {
         )}
 
         {notification && (
-          <div className={`fixed bottom-8 right-8 p-4 rounded-xl shadow-2xl z-50 animate-bounce ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
+          <div className={`fixed bottom-8 right-8 p-4 rounded-xl shadow-2xl z-50 animate-slide-up ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
             <p className="font-bold flex items-center gap-2">
               {notification.type === 'error' ? 'Oops!' : 'Success!'}
               <span className="font-normal">{notification.msg}</span>
@@ -252,9 +243,10 @@ export default function AdminProductsDashboard() {
 function ProductVerificationCard({ product, onViewDetail, isHistory }: { product: any, onViewDetail: () => void, isHistory?: boolean }) {
   const isVerified = product.isVerified || product.IsVerified;
 
+  // If unverified: show product description. If verified: show verifyDescription.
   const descriptionStr = isVerified
     ? (product.verifyDescription || product.VerifyDescription || 'No verification description added.')
-    : (product.verifyDescription || product.VerifyDescription || product.description || product.Description || 'No description provided.');
+    : (product.description || product.Description || 'No description provided.');
 
   return (
     <div className="premium-card bg-white p-6 relative overflow-hidden group hover:scale-[1.02] transition-transform border border-slate-100 flex flex-col h-full">
@@ -293,6 +285,7 @@ function ProductVerificationCard({ product, onViewDetail, isHistory }: { product
 function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, loading }: any) {
   const [fullProduct, setFullProduct] = useState<any>(null);
   const [verifierDetail, setVerifierDetail] = useState<any>(null);
+  const [ownerDetail, setOwnerDetail] = useState<any>(null);
   const [fetching, setFetching] = useState(false);
   const [modalImage, setModalImage] = useState<string | null>(null);
 
@@ -344,7 +337,6 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
 
     try {
       // 1. Fetch full product details using /api/Product/all 
-      // The user specified we should put `productId` in the body
       const payload = {
         productId: overviewProduct.id || overviewProduct.productId || overviewProduct.ProductId,
         page: 1,
@@ -352,10 +344,20 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
       };
       const pRes = await api.post('/api/Product/all', payload, false, token!);
       if (pRes.success && pRes.data && (pRes.data as any[]).length > 0) {
-        setFullProduct((pRes.data as any[])[0]);
+        const prod = (pRes.data as any[])[0];
+        setFullProduct(prod);
+
+        // 2. Fetch owner/submitter details using userId from product
+        const userId = prod.user_id || prod.userId || prod.UserId;
+        if (userId) {
+          const uRes = await api.get(`/api/User/profile/${userId}`, token!);
+          if (uRes.success && uRes.data) {
+            setOwnerDetail(uRes.data);
+          }
+        }
       }
 
-      // 2. Fetch verifier details if verifierId exists
+      // 3. Fetch verifier details if verifierId exists
       const verifierId = overviewProduct.verifierId || overviewProduct.VerifierId;
       if (verifierId) {
         const vRes = await api.get(`/api/admin-request/details/${verifierId}`, token!);
@@ -438,25 +440,67 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">
-                    {(!isVerified && (fullProduct?.verifyDescription || fullProduct?.VerifyDescription || overviewProduct.verifyDescription || overviewProduct.VerifyDescription)) 
-                      ? 'Admin Review' 
-                      : 'Product Description'}
-                  </span>
-                  <ul className="space-y-2">
-                    {(isVerified 
-                        ? (fullProduct?.verifyDescription || overviewProduct.verifyDescription || overviewProduct.VerifyDescription)
-                        : (fullProduct?.verifyDescription || fullProduct?.VerifyDescription || overviewProduct.verifyDescription || overviewProduct.VerifyDescription || fullProduct?.description || overviewProduct.description || overviewProduct.Description)
-                        || 'No description'
-                    ).split(',').map((point: string, idx: number) => (
-                      <li key={idx} className="flex gap-2 text-slate-700 text-sm">
-                        <span className="text-red-500 font-bold">•</span>
-                        {point.trim()}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
+                  <div>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-3">
+                      Product Description
+                    </span>
+                    <ul className="space-y-2">
+                      {((fullProduct?.description || overviewProduct.description || overviewProduct.Description) || 'No description').split(',').map((point: string, idx: number) => (
+                        <li key={idx} className="flex gap-2 text-slate-700 text-sm">
+                          <span className="text-slate-400 font-bold">•</span>
+                          {point.trim()}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {isVerified && (
+                    <div className="pt-4 border-t border-slate-200">
+                      <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest block mb-3">
+                        Admin Verify Remarks
+                      </span>
+                      <ul className="space-y-2">
+                        {((fullProduct?.verifyDescription || overviewProduct.verifyDescription || overviewProduct.VerifyDescription) || 'No remarks').split(',').map((point: string, idx: number) => (
+                          <li key={idx} className="flex gap-2 text-emerald-700 text-sm">
+                            <span className="text-emerald-500 font-bold">•</span>
+                            {point.trim()}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
+
+                {/* Owner/Submitter Details */}
+                {ownerDetail && (
+                  <div className="bg-amber-50/50 p-5 rounded-2xl border border-amber-100/50">
+                    <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest block mb-3">Submitted By (Owner)</span>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold overflow-hidden shadow-sm">
+                        {ownerDetail.imageUrl ? (
+                          <img src={ownerDetail.imageUrl} className="w-full h-full object-cover" />
+                        ) : (
+                          (ownerDetail.name || ownerDetail.Name || '?').charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-slate-900 font-bold text-sm">{ownerDetail.name || ownerDetail.Name || 'N/A'}</p>
+                        <p className="text-amber-700 text-xs font-semibold">{ownerDetail.email || ownerDetail.Email || 'N/A'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 pt-3 border-t border-amber-100">
+                      <div className="flex justify-between items-center bg-white/60 p-2 rounded-lg">
+                        <span className="text-[9px] font-bold text-amber-500 uppercase tracking-widest">Phone</span>
+                        <span className="text-xs font-bold text-slate-700">{ownerDetail.phone || ownerDetail.Phone || ownerDetail.mobile || ownerDetail.Mobile || 'N/A'}</span>
+                      </div>
+                      <div className="flex flex-col bg-white/60 p-2 rounded-lg">
+                        <span className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mb-0.5">Address</span>
+                        <span className="text-xs font-bold text-slate-700">{ownerDetail.address || ownerDetail.Address || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Verifier Detail Block */}
                 {verifierDetail && (
@@ -527,7 +571,7 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
                               SellerId: overviewProduct.sellerId || overviewProduct.SellerId || fullProduct?.userId,
                               description: verifyDescPoints.map(p => p.trim()).filter(Boolean).join(',')
                             };
-                            console.log(overviewProduct)
+
                             const res = await api.post('/api/verify/product', payload, false, token);
                             if (res.success) {
                               onClose();

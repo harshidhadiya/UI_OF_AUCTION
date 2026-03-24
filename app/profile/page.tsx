@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { api, ApiResponse } from '@/lib/api';
 import { auth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/Navbar';
+import AdminNavbar from '@/components/AdminNavbar';
 
 export default function Profile() {
   const [profile, setProfile] = useState<any>(null);
@@ -127,7 +129,7 @@ export default function Profile() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      console.log("entered");
+
       const res = await api.patch('/api/user/profile', formData, true, token!);
       if (res.success && res.data) {
         const data = res.data as any;
@@ -153,10 +155,15 @@ export default function Profile() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading Profile...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="w-10 h-10 border-4 border-brand-accent border-t-transparent rounded-full animate-spin" /></div>;
+
+  const user = auth.getUser();
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-50 page-enter">
+      {isAdmin ? <AdminNavbar /> : <Navbar />}
+      <div className="p-6">
       <div className="max-w-3xl mx-auto">
         <div className="premium-card bg-white overflow-hidden">
           {/* Header/Cover aspect */}
@@ -262,6 +269,7 @@ export default function Profile() {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

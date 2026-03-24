@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { api, ApiResponse } from '@/lib/api';
 import { auth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/Navbar';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -72,10 +73,10 @@ export default function ProductsPage() {
       mine: activeTab === 'mine',
       verified: verifiedFilter,
       searchName: searchName || undefined,
-      buyFrom: buyFrom ? new Date(buyFrom).toISOString() : undefined,
-      buyTo: buyTo ? new Date(buyTo).toISOString() : undefined,
-      createdFrom: activeTab === 'mine' && createdFrom ? new Date(createdFrom).toISOString() : undefined,
-      createdTo: activeTab === 'mine' && createdTo ? new Date(createdTo).toISOString() : undefined,
+      buyFrom: buyFrom ? new Date(buyFrom).toLocaleString('sv-SE').replace(' ', 'T') : undefined,
+      buyTo: buyTo ? new Date(buyTo).toLocaleString('sv-SE').replace(' ', 'T') : undefined,
+      createdFrom: activeTab === 'mine' && createdFrom ? new Date(createdFrom).toLocaleString('sv-SE').replace(' ', 'T') : undefined,
+      createdTo: activeTab === 'mine' && createdTo ? new Date(createdTo).toLocaleString('sv-SE').replace(' ', 'T') : undefined,
       page: page,
       size: 10
     };
@@ -133,17 +134,8 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight">Bid<span className="text-brand-accent">Sphere</span> Products</h1>
-          <div className="flex gap-4">
-            <button onClick={() => router.push('/dashboard')} className="text-sm font-medium hover:text-brand-accent transition-colors">Dashboard</button>
-            <button onClick={() => router.push('/profile')} className="text-sm font-medium hover:text-brand-accent transition-colors">My Profile</button>
-            <button onClick={() => auth.logout()} className="text-sm font-medium hover:text-brand-accent transition-colors">Logout</button>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-slate-50 page-enter">
+      <Navbar />
 
       <main className="max-w-7xl mx-auto p-8">
         <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -251,7 +243,7 @@ export default function ProductsPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {products.map((p: any) => (
-                <ProductCard key={p.id} product={p} currentUser={currentUser} onViewDetail={() => setSelectedProduct(p)} />
+                <ProductCard key={p.id || p.Id} product={p} currentUser={currentUser} onViewDetail={() => setSelectedProduct(p)} />
               ))}
             </div>
 
@@ -344,7 +336,7 @@ export default function ProductsPage() {
 }
 
 function ProductCard({ product, currentUser, onViewDetail }: { product: any, currentUser: any, onViewDetail: () => void }) {
-  const isMine = product.user_id === currentUser?.id;
+  const isMine = (product.user_id || product.userId) === currentUser?.id;
   const isVerified = product.verified || product.Verified;
   const mainImage = product.images && product.images.length > 0 ? product.images[0].imageUrl : 'https://via.placeholder.com/300?text=No+Image';
 
@@ -363,23 +355,34 @@ function ProductCard({ product, currentUser, onViewDetail }: { product: any, cur
       </div>
       <div className="p-6 flex flex-col flex-1">
         <h3 className="text-xl font-black text-slate-900 mb-2 truncate">{product.name || product.Name}</h3>
-        <p className="text-slate-500 text-sm mb-4 line-clamp-2 leading-relaxed flex-1">
-          {((product.description || product.Description) || '').split(',').join(' • ')}
-        </p>
-        
+        <ul className="text-slate-500 text-sm mb-4 flex-1 space-y-1">
+          {((product.description || product.Description) || '').split(',').filter((p: string) => p.trim()).map((point: string, idx: number) => (
+            <li key={idx} className="flex gap-1.5 items-start">
+              <span className="text-brand-accent font-bold mt-0.5">•</span>
+              <span className="line-clamp-1">{point.trim().replace(/^[-*]\s*/, '')}</span>
+            </li>
+          ))}
+        </ul>
+
         {(product.auctionStartTime || product.auctionEndTime) && (
           <div className="bg-brand-accent/5 border border-brand-accent/20 rounded-xl p-3 mb-4 space-y-1">
-            <h4 className="text-[10px] uppercase font-black tracking-widest text-brand-accent mb-1">Auction Schedule</h4>
+            <h4 className="text-[10px] uppercase font-black tracking-widest text-brand-accent mb-1">
+              Auction Schedule - {new Date(product.auctionStartTime || product.auctionEndTime).toLocaleDateString()}
+            </h4>
             {product.auctionStartTime && (
               <p className="text-xs font-semibold text-slate-600 flex justify-between">
                 <span>Starts:</span>
-                <span className="font-bold text-slate-900">{new Date(product.auctionStartTime).toLocaleString()}</span>
+                <span className="font-bold text-slate-900">
+                  {new Date(product.auctionStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </p>
             )}
             {product.auctionEndTime && (
               <p className="text-xs font-semibold text-slate-600 flex justify-between">
                 <span>Ends:</span>
-                <span className="font-bold text-slate-900">{new Date(product.auctionEndTime).toLocaleString()}</span>
+                <span className="font-bold text-slate-900">
+                  {new Date(product.auctionEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </p>
             )}
           </div>
@@ -395,27 +398,53 @@ function ProductCard({ product, currentUser, onViewDetail }: { product: any, cur
 }
 
 function ProductDetailsModal({ isOpen, product, currentUser, onClose, onDeleteSuccess, onEdit, onOpenAuctionCreate, onOpenAuctionUpdate }: any) {
+  const router = useRouter();
   const [ownerDetail, setOwnerDetail] = useState<any>(null);
   const [loadingOwner, setLoadingOwner] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [modalImage, setModalImage] = useState<string | null>(null);
 
+  const [existingAuction, setExistingAuction] = useState<any>(null);
+  const [loadingAuction, setLoadingAuction] = useState(false);
+
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen && product) {
+      checkExistingAuction();
+    } else {
+      setExistingAuction(null);
       setOwnerDetail(null);
     }
-  }, [isOpen]);
+  }, [isOpen, product]);
+
+  const checkExistingAuction = async () => {
+    setLoadingAuction(true);
+    try {
+      const token = auth.getToken();
+      // Use more targeted query as per user request
+      const res = await api.get(`/api/auctions?productId=${product.id || product.Id}`, token!);
+      if (res.success && res.data && (res.data as any).items) {
+        // Auction list is in res.data.items
+        const myAuction = (res.data as any).items[0];
+        setExistingAuction(myAuction || null);
+        console.log(myAuction)
+      }
+    } catch (e) {
+      console.error("Error checking existing auction", e);
+    } finally {
+      setLoadingAuction(false);
+    }
+  };
 
   if (!isOpen || !product) return null;
 
-  const isMine = product.user_id === currentUser?.id;
+  const isMine = (product.user_id || product.userId) === currentUser?.id;
   const isVerified = product.verified || product.Verified;
 
   const fetchOwnerDetail = async () => {
     setLoadingOwner(true);
     try {
       const token = auth.getToken();
-      const res = await api.get(`/api/User/profile/${product.user_id}`, token!);
+      const res = await api.get(`/api/User/profile/${product.user_id || product.userId}`, token!);
       if (res.success && res.data) {
         setOwnerDetail(res.data);
       }
@@ -431,7 +460,7 @@ function ProductDetailsModal({ isOpen, product, currentUser, onClose, onDeleteSu
     setIsDeleting(true);
     try {
       const token = auth.getToken();
-      const res = await api.delete(`/api/Product/${product.id}`, token!);
+      const res = await api.delete(`/api/Product/${product.id || product.Id}`, token!);
       if (res.success) {
         onDeleteSuccess?.(res.message || 'Product deleted successfully');
       } else {
@@ -534,27 +563,43 @@ function ProductDetailsModal({ isOpen, product, currentUser, onClose, onDeleteSu
               {isMine && (
                 <div className="flex flex-col gap-3">
                   {isVerified && (
-                    !product.auctionStartTime && !product.AuctionStartTime ? (
-                      <button onClick={onOpenAuctionCreate} className="w-full premium-button bg-brand-accent text-white shadow-xl shadow-brand-accent/20 py-4 font-bold text-sm tracking-wide hover:bg-brand-accent/90 transition-colors flex items-center justify-center">
-                        Launch Auction
+                    (loadingAuction) ? (
+                      <div className="w-full py-4 flex items-center justify-center gap-2 text-slate-400 font-bold text-sm bg-slate-50 rounded-xl border border-slate-100 italic">
+                        <div className="w-4 h-4 border-2 border-slate-200 border-t-slate-400 rounded-full animate-spin" />
+                        Checking status...
+                      </div>
+                    ) : (existingAuction || product.auctionStartTime || product.AuctionStartTime) ? (
+                      <button
+                        onClick={() => router.push(`/auctions?search=${encodeURIComponent(product.name || product.Name)}`)}
+                        className="w-full premium-button bg-slate-50 text-slate-700 border border-slate-200 py-4 font-bold text-sm tracking-wide hover:bg-slate-100 transition-all flex items-center justify-center gap-3 group shadow-sm"
+                        title="Click to view details in Auction Hub"
+                      >
+                        <div className="flex flex-col items-center">
+                          <span className="text-[10px] uppercase tracking-widest text-slate-400 group-hover:text-brand-accent transition-colors">Auction Scheduled</span>
+                          <span className="text-slate-800 font-black">
+                            {new Date(existingAuction?.startDate || existingAuction?.StartDate || product.auctionStartTime || product.AuctionStartTime).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                          </span>
+                        </div>
+                        <svg className="w-5 h-5 text-brand-accent group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                       </button>
                     ) : (
-                      <button onClick={onOpenAuctionUpdate} className="w-full premium-button bg-amber-500 text-white shadow-xl shadow-amber-500/20 py-4 font-bold text-sm tracking-wide hover:bg-amber-600 transition-colors flex items-center justify-center">
-                        Update Auction
+                      <button onClick={onOpenAuctionCreate} className="w-full premium-button bg-brand-accent text-white shadow-xl shadow-brand-accent/20 py-4 font-bold text-sm tracking-wide hover:bg-brand-accent/90 transition-all flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        Launch Auction
                       </button>
                     )
                   )}
                   <div className="flex flex-col sm:flex-row gap-3">
-                  <button onClick={onEdit} className="flex-1 premium-button bg-blue-500 text-white shadow-xl shadow-blue-500/20 py-4 font-bold text-sm tracking-wide hover:bg-blue-600 transition-colors flex items-center justify-center">
-                    Edit Product
-                  </button>
-                  <button onClick={handleDelete} disabled={isDeleting} className="flex-1 premium-button bg-red-500 text-white shadow-xl shadow-red-500/20 py-4 font-bold text-sm tracking-wide hover:bg-red-600 transition-colors flex items-center justify-center gap-2">
-                    {isDeleting && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                    {isDeleting ? 'Deleting...' : 'Delete'}
-                  </button>
-                  <button onClick={onClose} className="flex-1 premium-button bg-slate-900 text-white shadow-xl shadow-slate-900/20 py-4 font-bold text-sm tracking-wide hover:bg-black transition-colors">
-                    Close
-                  </button>
+                    <button onClick={onEdit} className="flex-1 premium-button bg-blue-500 text-white shadow-xl shadow-blue-500/20 py-4 font-bold text-sm tracking-wide hover:bg-blue-600 transition-colors flex items-center justify-center">
+                      Edit Product
+                    </button>
+                    <button onClick={handleDelete} disabled={isDeleting} className="flex-1 premium-button bg-red-500 text-white shadow-xl shadow-red-500/20 py-4 font-bold text-sm tracking-wide hover:bg-red-600 transition-colors flex items-center justify-center gap-2">
+                      {isDeleting && <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                      {isDeleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                    <button onClick={onClose} className="flex-1 premium-button bg-slate-900 text-white shadow-xl shadow-slate-900/20 py-4 font-bold text-sm tracking-wide hover:bg-black transition-colors">
+                      Close
+                    </button>
                   </div>
                 </div>
               )}
@@ -631,7 +676,7 @@ function CreateProductModal({ isOpen, onClose, onSuccess, onError }: any) {
     formData.append('name', name);
     formData.append('description', formattedDesc);
     // Use ISOString as typical for C# DateTime mapping
-    formData.append('date', selectedDate.toISOString());
+    formData.append('date', selectedDate.toLocaleString('sv-SE').replace(' ', 'T'));
 
     images.forEach(file => {
       formData.append('images', file);
@@ -705,7 +750,7 @@ function CreateProductModal({ isOpen, onClose, onSuccess, onError }: any) {
                   </div>
                 </div>
               </div>
-              <input type="date" value={buyDate} max={new Date().toISOString().split('T')[0]} onChange={e => setBuyDate(e.target.value)} required className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all text-slate-700" />
+              <input type="date" value={buyDate} max={new Date().toLocaleString('sv-SE').replace(' ', 'T').split('T')[0]} onChange={e => setBuyDate(e.target.value)} required className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all text-slate-700" />
             </div>
 
             <div>
@@ -770,7 +815,7 @@ function UpdateProductModal({ isOpen, product, onClose, onSuccess, onError }: an
       setDescPoints(parsedPoints.length ? parsedPoints : ['']);
       const bd = product.product_buy_date || product.Product_buy_date;
       if (bd) {
-        setBuyDate(new Date(bd).toISOString().split('T')[0]);
+        setBuyDate(new Date(bd).toLocaleString('sv-SE').replace(' ', 'T').split('T')[0]);
       }
       setReplacedImages([]);
       setNewImages([]);
@@ -829,13 +874,13 @@ function UpdateProductModal({ isOpen, product, onClose, onSuccess, onError }: an
   const handleDeleteImage = async (imageId: number, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!window.confirm("Are you sure you want to permanently delete this image?")) return;
-    
+
     try {
       setLoading(true);
       const token = auth.getToken();
-      
+
       const res = await api.delete(`/api/Product/${product.id}/images/${imageId}`, token!);
       if (res.success) {
         setDeletedImageIds(prev => [...prev, imageId]);
@@ -859,7 +904,7 @@ function UpdateProductModal({ isOpen, product, onClose, onSuccess, onError }: an
     const formattedDesc = descPoints.map(p => p.trim()).filter(Boolean).join(',');
     formData.append('name', name);
     formData.append('description', formattedDesc);
-    formData.append('date', new Date(buyDate).toISOString());
+    formData.append('date', new Date(buyDate).toLocaleString('sv-SE').replace(' ', 'T'));
 
     replacedImages.forEach(ri => {
       formData.append('ids', ri.id.toString());
@@ -868,7 +913,7 @@ function UpdateProductModal({ isOpen, product, onClose, onSuccess, onError }: an
 
     try {
       const token = auth.getToken();
-      
+
       const res = await api.patch(`/api/Product/${product.id}`, formData, true, token!);
       let imagesRes: any = { success: true, message: '' };
 
@@ -938,7 +983,7 @@ function UpdateProductModal({ isOpen, product, onClose, onSuccess, onError }: an
               <div className="flex items-center gap-2 mb-2">
                 <label className="block text-sm font-bold text-slate-700">Buy Date</label>
               </div>
-              <input type="date" value={buyDate} max={new Date().toISOString().split('T')[0]} onChange={e => setBuyDate(e.target.value)} required className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all text-slate-700" />
+              <input type="date" value={buyDate} max={new Date().toLocaleString('sv-SE').replace(' ', 'T').split('T')[0]} onChange={e => setBuyDate(e.target.value)} required className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all text-slate-700" />
             </div>
 
             <div>
@@ -955,12 +1000,12 @@ function UpdateProductModal({ isOpen, product, onClose, onSuccess, onError }: an
                   return (
                     <div key={img.id} className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-slate-200 shrink-0 group hover:border-brand-accent transition-colors flex items-center justify-center">
                       <img src={repl ? repl.preview : img.imageUrl} className="w-full h-full object-cover" />
-                      
+
                       <div className={`absolute inset-0 bg-black/40 text-white flex flex-col items-center justify-center transition-opacity backdrop-blur-[2px] ${repl ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100'}`}>
                         <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                         <span className="text-[10px] font-bold uppercase tracking-wider">Replace</span>
                       </div>
-                      
+
                       {!repl && (
                         <button type="button" onClick={(e) => handleDeleteImage(img.id, e)} className="absolute top-1 left-1 w-6 h-6 bg-red-500 text-white rounded-md flex items-center justify-center hover:bg-red-600 shadow-md z-[60] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto" title="Delete image">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -1052,27 +1097,59 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
 
     try {
       setLoading(true);
-      
+
       const startDateTime = new Date(`${startDate}T${startTime}`);
       const duration = parseInt(durationMinutes);
       const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
 
       const payload = {
-        ProductId: product.id,
+        ProductId: product.id || product.Id,
         StartingPrice: parseFloat(startingPrice),
         ReservePrice: reservePrice ? parseFloat(reservePrice) : null,
         MinBidIncrement: parseFloat(minBidIncrement),
-        StartDate: startDateTime.toISOString(),
-        EndDate: endDateTime.toISOString()
+        StartDate: startDateTime.toLocaleString('sv-SE').replace(' ', 'T'),
+        EndDate: endDateTime.toLocaleString('sv-SE').replace(' ', 'T')
       };
 
       const token = auth.getToken();
-      const res = await api.post('/api/verify/auction', payload, false, token!);
-      
+
+      // [SMART CHECK] If an auction already exists for this product, we should use PATCH instead of POST /api/verify/auction.
+      let existingAuctionId = null;
+      let existingAuction = null;
+      try {
+        const checkRes = await api.get(`/api/auctions?productId=${product.id || product.Id}`, token!);
+        if (checkRes.success && checkRes.data && (checkRes.data as any).items && (checkRes.data as any).items.length > 0) {
+          existingAuction = (checkRes.data as any).items[0];
+          existingAuctionId = existingAuction.id || existingAuction.Id;
+        }
+      } catch (e) { console.error("Error checking for existing auction:", e); }
+
+      let res;
+      if (existingAuctionId) {
+        const hasBids = existingAuction ? (existingAuction.totalBids > 0 || existingAuction.TotalBids > 0) : false;
+
+        const patchPayload: any = {
+          ReservePrice: reservePrice ? parseFloat(reservePrice) : null,
+          MinBidIncrement: parseFloat(minBidIncrement),
+          StartDate: startDateTime.toLocaleString('sv-SE').replace(' ', 'T'),
+          EndDate: endDateTime.toLocaleString('sv-SE').replace(' ', 'T')
+        };
+
+        if (!hasBids) {
+          patchPayload.StartingPrice = parseFloat(startingPrice);
+        }
+
+        // If it exists, use the update (PATCH) endpoint correctly as per user request
+        res = await api.patch(`/api/auctions/${existingAuctionId}`, patchPayload, false, token!);
+      } else {
+        // Otherwise, use the initial launch (POST) endpoint
+        res = await api.post('/api/verify/auction', payload, false, token!);
+      }
+
       if (res.success) {
         onSuccess();
       } else {
-        onError(res.message || "Failed to create auction.");
+        onError(res.message || "Failed to process auction launch.");
       }
     } catch (err: any) {
       onError(err.message || "An error occurred.");
@@ -1096,7 +1173,7 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="space-y-4">
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Starting Price (₹)</label>
@@ -1105,7 +1182,7 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
                   <input type="number" min="0" step="0.01" value={startingPrice} onChange={e => setStartingPrice(e.target.value)} required className="w-full pl-8 pr-5 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all" placeholder="0.00" />
                 </div>
               </div>
-              
+
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <label className="block text-sm font-bold text-slate-700">Reserve Price (₹)</label>
@@ -1134,9 +1211,9 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Start Date</label>
-                <input type="date" min={new Date().toISOString().split('T')[0]} value={startDate} onChange={e => setStartDate(e.target.value)} required className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all text-slate-700" />
+                <input type="date" min={new Date().toLocaleString('sv-SE').replace(' ', 'T').split('T')[0]} value={startDate} onChange={e => setStartDate(e.target.value)} required className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all text-slate-700" />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Start Time</label>
                 <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} required className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 outline-none transition-all text-slate-700" />
@@ -1198,19 +1275,19 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
       const res = await api.get('/api/auctions/created', token!);
       if (res.success && res.data) {
         const auctions = res.data as any[];
-        const myAuction = auctions.find(a => a.productId === product.id || a.ProductId === product.id);
+        const myAuction = auctions.find(a => (a.productId || a.ProductId) === (product.id || product.Id));
         if (myAuction) {
           setAuctionId(myAuction.id || myAuction.Id);
           setStartingPrice(myAuction.startingPrice?.toString() || myAuction.StartingPrice?.toString() || '');
           setReservePrice(myAuction.reservePrice?.toString() || myAuction.ReservePrice?.toString() || '');
           setMinBidIncrement(myAuction.minBidIncrement?.toString() || myAuction.MinBidIncrement?.toString() || '');
-          
+
           const sDateRaw = myAuction.startDate || myAuction.StartDate;
           if (sDateRaw) {
             const sd = new Date(sDateRaw);
             setStartDate(sd.getFullYear() + "-" + String(sd.getMonth() + 1).padStart(2, '0') + "-" + String(sd.getDate()).padStart(2, '0'));
             setStartTime(String(sd.getHours()).padStart(2, '0') + ":" + String(sd.getMinutes()).padStart(2, '0'));
-            
+
             const eDateRaw = myAuction.endDate || myAuction.EndDate;
             if (eDateRaw) {
               const ed = new Date(eDateRaw);
@@ -1245,7 +1322,7 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
 
     try {
       setLoading(true);
-      
+
       let startDateTime: Date | null = null;
       let endDateTime: Date | null = null;
 
@@ -1261,13 +1338,13 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
         StartingPrice: startingPrice ? parseFloat(startingPrice) : null,
         ReservePrice: reservePrice ? parseFloat(reservePrice) : null,
         MinBidIncrement: minBidIncrement ? parseFloat(minBidIncrement) : null,
-        StartDate: startDateTime ? startDateTime.toISOString() : null,
-        EndDate: endDateTime ? endDateTime.toISOString() : null
+        StartDate: startDateTime ? startDateTime.toLocaleString('sv-SE').replace(' ', 'T') : null,
+        EndDate: endDateTime ? endDateTime.toLocaleString('sv-SE').replace(' ', 'T') : null
       };
 
       const token = auth.getToken();
       const res = await api.patch(`/api/auctions/${auctionId}`, payload, false, token!);
-      
+
       if (res.success) {
         onSuccess();
       } else {
@@ -1281,14 +1358,14 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
   };
 
   if (fetching) {
-     return (
-       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-         <div className="bg-white p-8 rounded-2xl flex flex-col items-center shadow-2xl animate-in zoom-in">
-            <div className="w-10 h-10 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="font-bold text-slate-800 tracking-wide">Loading auction details...</p>
-         </div>
-       </div>
-     );
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="bg-white p-8 rounded-2xl flex flex-col items-center shadow-2xl animate-in zoom-in">
+          <div className="w-10 h-10 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="font-bold text-slate-800 tracking-wide">Loading auction details...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -1306,7 +1383,7 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="space-y-4">
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Starting Price (₹)</label>
@@ -1315,7 +1392,7 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
                   <input type="number" min="0" step="0.01" value={startingPrice} onChange={e => setStartingPrice(e.target.value)} className="w-full pl-8 pr-5 py-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all" placeholder="Optional" />
                 </div>
               </div>
-              
+
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <label className="block text-sm font-bold text-slate-700">Reserve Price (₹)</label>
@@ -1344,9 +1421,9 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Start Date</label>
-                <input type="date" min={new Date().toISOString().split('T')[0]} value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-slate-700" title="Optional" />
+                <input type="date" min={new Date().toLocaleString('sv-SE').replace(' ', 'T').split('T')[0]} value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-slate-700" title="Optional" />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Start Time</label>
                 <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-slate-700" title="Optional" />

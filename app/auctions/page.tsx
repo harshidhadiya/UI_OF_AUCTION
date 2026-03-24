@@ -1,14 +1,28 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { api } from '@/lib/api';
 import { auth } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
-
-const MAX_AUCTION_DURATION_MINUTES = 30;
+import { useRouter, useSearchParams } from 'next/navigation';
+import { statusColors, MAX_AUCTION_DURATION_MINUTES } from '@/lib/constants';
+import { getRelativeDateText, formatTime } from '@/lib/utils';
+import Navbar from '@/components/Navbar';
 
 export default function AuctionsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <AuctionsContent />
+    </Suspense>
+  );
+}
+
+function AuctionsContent() {
   const [auctions, setAuctions] = useState<any[]>([]);
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -21,6 +35,14 @@ export default function AuctionsPage() {
   const [name, setName] = useState('');
   const [mine, setMine] = useState(false);
   const [searchTrigger, setSearchTrigger] = useState(false);
+
+  useEffect(() => {
+    const search = searchParams.get('search');
+    if (search) {
+      setName(search);
+      setSearchTrigger(prev => !prev);
+    }
+  }, [searchParams]);
 
   // Modals
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -79,8 +101,9 @@ export default function AuctionsPage() {
 
     try {
       const res = await api.get(`/api/auctions?${queryParams.toString()}`, token!);
-      if (res.success && res.data?.items) {
-        const newData = res.data.items as any[];
+
+      if (res.success && (res.data as any)?.items) {
+        const newData = (res.data as any).items as any[];
         setHasMore(newData.length === 20); // matching PageSize
         setAuctions(prev => isLoadMore ? [...prev, ...newData] : newData);
         if (newData.length === 0 && !isLoadMore) setIs404(true);
@@ -130,21 +153,8 @@ export default function AuctionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <svg className="w-6 h-6 text-brand-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
-            Bid<span className="text-brand-accent">Sphere</span> Auctions
-          </h1>
-          <div className="flex gap-4">
-            <button onClick={() => router.push('/dashboard')} className="text-sm font-medium hover:text-brand-accent transition-colors">Dashboard</button>
-            <button onClick={() => router.push('/products')} className="text-sm font-medium hover:text-brand-accent transition-colors">Products</button>
-            <button onClick={() => router.push('/profile')} className="text-sm font-medium hover:text-brand-accent transition-colors">Profile</button>
-            <button onClick={() => auth.logout()} className="text-sm font-medium hover:text-brand-accent transition-colors">Logout</button>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-slate-50 page-enter">
+      <Navbar />
 
       <main className="max-w-7xl mx-auto p-8">
         <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -159,7 +169,7 @@ export default function AuctionsPage() {
         </header>
 
         {/* Filters */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 z-30 relative">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 z-20 relative">
           <div className="flex flex-wrap gap-4 items-end">
             <div className="flex-1 min-w-[200px]">
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Product Name</label>
@@ -175,6 +185,7 @@ export default function AuctionsPage() {
                 <option value="Ended">Ended</option>
                 <option value="Cancelled">Cancelled</option>
                 <option value="UnVerified">UnVerified</option>
+                <option value="Verified">Verified</option>
               </select>
             </div>
 
@@ -247,6 +258,9 @@ export default function AuctionsPage() {
                     setAuctionProduct(prod);
                     setIsAuctionModalOpen(true);
                   }}
+                  onWatchSuccess={(msg: string) => showNotification(msg, 'success')}
+                  onWatchError={(msg: string) => showNotification(msg, 'error')}
+                  onRefresh={() => setSearchTrigger(prev => !prev)}
                 />
               ))}
             </div>
@@ -319,42 +333,73 @@ export default function AuctionsPage() {
   );
 }
 
-function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch }: { auction: any, currentUser: any, onUpdate: () => void, onViewDetails: (prod: any) => void, onLaunch: (prod: any) => void }) {
+function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, onWatchSuccess, onWatchError, onRefresh }: { auction: any, currentUser: any, onUpdate: () => void, onViewDetails: (prod: any) => void, onLaunch: (prod: any) => void, onWatchSuccess?: (msg: string) => void, onWatchError?: (msg: string) => void, onRefresh: () => void }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isWatched, setIsWatched] = useState(false);
+  const router = useRouter();
 
   const isMine = auction.createdByUserId == currentUser?.id || auction.CreatedByUserId == currentUser?.id;
 
-  const statusColors: any = {
-    'Upcoming': 'bg-blue-100 text-blue-700 border-blue-200',
-    'Live': 'bg-red-100 text-red-700 border-red-200 animate-pulse',
-    'Ended': 'bg-slate-100 text-slate-700 border-slate-200',
-    'Cancelled': 'bg-gray-100 text-gray-700 border-gray-200',
-    'UnVerified': 'bg-orange-100 text-orange-700 border-orange-200'
+  const auctionStatusColors: Record<string, string> = {
+    ...statusColors,
+    'Verified': 'bg-emerald-100 text-emerald-700 border-emerald-200'
   };
 
   const status = auction.status || auction.Status;
-  const statusStyle = statusColors[status] || 'bg-slate-100 text-slate-700 border-slate-200';
+  const statusStyle = auctionStatusColors[status] || 'bg-slate-100 text-slate-700 border-slate-200';
 
-  // Local state for live countdown visualization
-  const [timeRemaining, setTimeRemaining] = useState<number>(auction.timeRemainingSeconds || auction.TimeRemainingSeconds || 0);
+  const startDateObj = new Date(auction.startDate || auction.StartDate);
+  const now = new Date();
+  // Cancellation is allowed only before the start date for owners
+  const canCancel = isMine && now < startDateObj && (status === 'Upcoming' || status === 'Verified');
 
-  useEffect(() => {
-    let interval: any;
-    if (status === 'Live' && timeRemaining > 0) {
-      interval = setInterval(() => {
-        setTimeRemaining((prev: number) => Math.max(0, prev - 1));
-      }, 1000);
+  const handleCancel = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to cancel this auction?')) return;
+    try {
+      const token = auth.getToken();
+      const res = await api.delete(`/api/auctions/${auction.id || auction.Id}`, token!);
+      if (res.success) {
+        onRefresh(); // Trigger refresh instead of opening update modal
+      } else {
+        alert(res.message || "Failed to cancel auction");
+      }
+    } catch (err: any) {
+      alert(err.message || "An error occurred while cancelling.");
     }
-    return () => clearInterval(interval);
-  }, [status, timeRemaining]);
+  };
 
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    if (h > 0) return `${h}h ${m}m ${s}s`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
+  // Countdown — state seeded from API value, interval ticks every 1s
+  const [timeRemaining, setTimeRemaining] = useState<number>(
+    auction.timeRemainingSeconds || auction.TimeRemainingSeconds || 0
+  );
+
+  // Only recreate interval when Live status changes — NOT on every tick
+  useEffect(() => {
+    if (status !== 'Live') return;
+    const interval = setInterval(() => {
+      setTimeRemaining(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [status]);
+
+
+
+  const handleWatch = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const token = auth.getToken();
+      const res = await api.post(`/api/Watchlist/${auction.id || auction.Id}/watch`, {}, false, token!);
+      if (res.success) {
+        setIsWatched(true);
+        if (onWatchSuccess) onWatchSuccess(res.message || "Auction watched successfully");
+      } else {
+        if (onWatchError) onWatchError(res.message || "Failed to watch auction");
+      }
+    } catch (err: any) {
+      console.error("Failed to watch auction", err);
+      if (onWatchError) onWatchError(err.message || "Failed to watch auction");
+    }
   };
 
   const name = auction.productName || auction.ProductName || `Product ID: ${auction.productId || auction.ProductId}`;
@@ -410,10 +455,19 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch }
         </div>
 
         <h3 className="text-xl font-black text-slate-900 mb-1 line-clamp-1" title={name}>{name}</h3>
-        {desc && <p className="text-slate-500 text-xs mb-4 line-clamp-2 leading-relaxed">{desc}</p>}
+        {desc && (
+          <ul className="text-slate-500 text-xs mb-4 flex-1 space-y-1">
+            {desc.split(',').filter((p: string) => p.trim()).map((point: string, idx: number) => (
+              <li key={idx} className="flex gap-1.5 items-start">
+                <span className="text-brand-accent font-bold mt-0.5">•</span>
+                <span className="line-clamp-1 leading-relaxed">{point.trim().replace(/^[-*]\s*/, '')}</span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         <div className="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100/50 flex-1">
-          {(auction.currentHighestBid || auction.CurrentHighestBid) > 0 && (
+          {status === 'Live' && (auction.currentHighestBid || auction.CurrentHighestBid) > 0 && (
             <div className="flex justify-between items-center text-sm">
               <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Curr Bid</span>
               <span className="font-black text-brand-accent text-lg flex items-baseline gap-1">
@@ -421,7 +475,7 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch }
               </span>
             </div>
           )}
-          
+
           {(auction.startingPrice || auction.StartingPrice) > 0 && (
             <div className="flex justify-between items-center text-sm">
               <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Starting</span>
@@ -436,7 +490,7 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch }
             </div>
           )}
 
-          {(auction.totalBids || auction.TotalBids) > 0 && (
+          {status === 'Live' && (auction.totalBids || auction.TotalBids) > 0 && (
             <div className="flex justify-between items-center text-sm">
               <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Total Bids</span>
               <span className="font-bold text-slate-700 px-2 py-0.5 bg-slate-200 rounded-md text-xs">{auction.totalBids || auction.TotalBids || 0}</span>
@@ -447,33 +501,91 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch }
         <div className="border-t border-slate-100 pt-4 mt-auto mb-4 space-y-2">
           {status !== 'UnVerified' && (
             <>
-              <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                <span className="truncate">{new Date(auction.startDate || auction.StartDate).toLocaleString()}</span>
-              </div>
+              {status === 'Upcoming' && (
+                <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                  <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  <span className="truncate">Starts: <span className="font-bold text-brand-accent">{getRelativeDateText(auction.startDate || auction.StartDate)}</span> at {new Date(auction.startDate || auction.StartDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              )}
 
               {status === 'Live' ? (
                 <div className="flex items-center gap-2 text-xs font-black text-red-600 bg-red-50 p-2 rounded-lg border border-red-100">
                   <svg className="w-4 h-4 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   Ends in: {timeRemaining > 0 ? formatTime(timeRemaining) : 'Ending...'}
                 </div>
-              ) : (
-                <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-                  <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Ends: {new Date(auction.endDate || auction.EndDate).toLocaleString()}
+              ) : null}
+
+              {status === 'Ended' && (
+                <div className="flex items-center gap-2 text-xs font-medium text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                  <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  Ended on: {new Date(auction.endDate || auction.EndDate).toLocaleString()}
+                </div>
+              )}
+
+              {status === 'Cancelled' && (
+                <div className="flex items-center gap-2 text-xs font-medium text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  Cancelled on: {new Date(auction.endDate || auction.EndDate).toLocaleString()}
                 </div>
               )}
             </>
           )}
         </div>
 
-        {/* Only allow update for upcoming, not launch for unverified as per user request */}
-        {isMine && status === 'Upcoming' && (
-          <button onClick={onUpdate} className="w-full py-3 bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-200 hover:border-amber-500 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-            Update Auction
-          </button>
-        )}
+        <div className="flex gap-2 mt-auto">
+          {/* Allow update for upcoming, verified, and cancelled auctions as per user request */}
+          {isMine && (status === 'Upcoming' || status === 'Verified' || status === 'Cancelled') && (
+            <button onClick={onUpdate} className="flex-1 py-3 bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-200 hover:border-amber-500 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+              {status === 'Verified' ? 'Setup & Launch' : 'Update'}
+            </button>
+          )}
+
+          {canCancel && (
+            <button onClick={handleCancel} className="flex-1 py-3 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 hover:border-red-500 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              Cancel
+            </button>
+          )}
+
+          {!isMine && status === 'Upcoming' && (
+            <button onClick={handleWatch} disabled={isWatched} className={`flex-1 py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm border ${isWatched ? 'bg-brand-accent text-white border-brand-accent' : 'bg-slate-50 text-slate-600 hover:bg-brand-accent hover:text-white border-slate-200 hover:border-brand-accent'}`}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              {isWatched ? 'Watched' : 'Watch'}
+            </button>
+          )}
+
+          {!isMine && status === 'Live' && (
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                if (!isWatched) {
+                  try {
+                    const token = auth.getToken();
+                    await api.post(`/api/Watchlist/${auction.id || auction.Id}/watch`, {}, false, token!);
+                  } catch (err) { /* ignore */ }
+                }
+                router.push(`/auction/${auction.id || auction.Id}`);
+              }}
+              className="flex-1 py-3 bg-red-50 text-red-600 hover:bg-brand-accent hover:text-white border border-red-200 hover:border-brand-accent rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              Participate Now
+            </button>
+          )}
+
+          {status === 'Ended' && (
+            <button
+              onClick={(e) => { e.stopPropagation(); router.push(`/auction/${auction.id || auction.Id}`); }}
+              className="flex-1 py-3 bg-slate-800 text-white hover:bg-slate-700 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm border border-slate-700"
+            >
+              View Winner
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -541,15 +653,20 @@ function StandaloneUpdateAuctionModal({ isOpen, auction, onClose, onSuccess, onE
         }
       }
 
-      const payload = {
-        StartingPrice: startingPrice ? parseFloat(startingPrice) : null,
+      const payload: any = {
         ReservePrice: reservePrice ? parseFloat(reservePrice) : null,
         MinBidIncrement: minBidIncrement ? parseFloat(minBidIncrement) : null,
-        StartDate: startDateTime ? startDateTime.toISOString() : null,
-        EndDate: endDateTime ? endDateTime.toISOString() : null
+        StartDate: startDateTime ? startDateTime.toLocaleString('sv-SE').replace(' ', 'T') : null,
+        EndDate: endDateTime ? endDateTime.toLocaleString('sv-SE').replace(' ', 'T') : null
       };
 
+      // Only include StartingPrice if no bids have been placed
+      if (!(auction.totalBids > 0 || auction.TotalBids > 0)) {
+        payload.StartingPrice = startingPrice ? parseFloat(startingPrice) : null;
+      }
+
       const token = auth.getToken();
+
       const res = await api.patch(`/api/auctions/${auctionId}`, payload, false, token!);
 
       if (res.success) {
@@ -586,10 +703,21 @@ function StandaloneUpdateAuctionModal({ isOpen, auction, onClose, onSuccess, onE
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Starting Price (₹)</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  Starting Price (₹) {(auction.totalBids > 0 || auction.TotalBids > 0) && <span className="text-[10px] text-red-500 font-black ml-1">(Locked: Bids exist)</span>}
+                </label>
                 <div className="relative">
                   <span className="absolute left-4 top-3 text-slate-400 font-bold">₹</span>
-                  <input type="number" min="0" step="0.01" value={startingPrice} onChange={e => setStartingPrice(e.target.value)} className="w-full pl-8 pr-5 py-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all" placeholder="Optional" />
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={startingPrice}
+                    onChange={e => setStartingPrice(e.target.value)}
+                    disabled={auction.totalBids > 0 || auction.TotalBids > 0}
+                    className={`w-full pl-8 pr-5 py-3 rounded-xl border outline-none transition-all ${(auction.totalBids > 0 || auction.TotalBids > 0) ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200' : 'border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'}`}
+                    placeholder="Optional"
+                  />
                 </div>
               </div>
 
@@ -621,7 +749,7 @@ function StandaloneUpdateAuctionModal({ isOpen, auction, onClose, onSuccess, onE
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Start Date</label>
-                <input type="date" min={new Date().toISOString().split('T')[0]} value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-slate-700" title="Optional" />
+                <input type="date" min={new Date().toLocaleString('sv-SE').replace(' ', 'T').split('T')[0]} value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-5 py-3 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all text-slate-700" title="Optional" />
               </div>
 
               <div>
@@ -677,7 +805,7 @@ function ProductDetailsModal({ isOpen, product, onClose, currentUser, onLaunchAu
   const points = description.split(',').filter((p: string) => p.trim().length > 0);
   const images = product.images || [];
   const isVerified = product.verified || product.isVerified;
-  console.log((product.user_id || product.userId) == currentUser?.id)
+
   const isOwner = (product.user_id || product.userId) == currentUser?.id;
 
   const fetchOwnerDetails = async () => {
@@ -864,16 +992,7 @@ function ProductDetailsModal({ isOpen, product, onClose, currentUser, onLaunchAu
                 </div>
               </div>
             )}
-             {/* Launch Auction ONLY for Verified Owner */}
-          {isVerified && isOwner && (
-            <button
-              onClick={() => { onClose(); onLaunchAuction(product); }}
-              className="w-full py-4 bg-brand-accent text-white font-bold rounded-2xl hover:bg-brand-accent/90 transition-all shadow-xl shadow-brand-accent/20 flex items-center justify-center gap-2 mb-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-              Launch Auction
-            </button>
-          )}
+
           </div>
 
         </div>
@@ -917,14 +1036,43 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
         StartingPrice: parseFloat(startingPrice),
         ReservePrice: reservePrice ? parseFloat(reservePrice) : null,
         MinBidIncrement: parseFloat(minBidIncrement),
-        StartDate: startDateTime.toISOString(),
-        EndDate: endDateTime.toISOString()
+        StartDate: startDateTime.toLocaleString('sv-SE').replace(' ', 'T'),
+        EndDate: endDateTime.toLocaleString('sv-SE').replace(' ', 'T')
       };
 
       const token = auth.getToken();
-      const res = await api.post('/api/verify/auction', payload, false, token!);
+
+      // [UPDATE] Check if an auction already exists for this product.
+      // If it exists (e.g. status was UnVerified), we should use PATCH instead of POST /api/verify/auction.
+      let existingAuctionId = null;
+      try {
+        const createdRes = await api.get('/api/auctions/created', token!);
+        if (createdRes.success && createdRes.data) {
+          const auctions = createdRes.data as any[];
+          const myAuction = auctions.find(a => (a.productId === product.id || a.ProductId === product.id));
+          if (myAuction) {
+            existingAuctionId = myAuction.id || myAuction.Id;
+          }
+        }
+      } catch (e) { console.error("Error checking for existing auction:", e); }
+
+      let res;
+      if (existingAuctionId) {
+        // If it exists, use the update (PATCH) endpoint correctly as per user request
+        res = await api.patch(`/api/auctions/${existingAuctionId}`, {
+          StartingPrice: parseFloat(startingPrice),
+          ReservePrice: reservePrice ? parseFloat(reservePrice) : null,
+          MinBidIncrement: parseFloat(minBidIncrement),
+          StartDate: startDateTime.toLocaleString('sv-SE').replace(' ', 'T'),
+          EndDate: endDateTime.toLocaleString('sv-SE').replace(' ', 'T')
+        }, false, token!);
+      } else {
+        // Otherwise, use the initial launch (POST) endpoint
+        res = await api.post('/api/verify/auction', payload, false, token!);
+      }
+
       if (res.success) onSuccess();
-      else onError(res.message || "Failed to create auction.");
+      else onError(res.message || "Failed to process auction launch.");
     } catch (err: any) {
       onError(err.message || "An error occurred.");
     } finally {
@@ -1009,7 +1157,7 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
           setReservePrice(myAuction.reservePrice?.toString() || '');
           setMinBidIncrement(myAuction.minBidIncrement?.toString() || '');
           const sd = new Date(myAuction.startDate || myAuction.StartDate);
-          setStartDate(sd.toISOString().split('T')[0]);
+          setStartDate(sd.toLocaleString('sv-SE').replace(' ', 'T').split('T')[0]);
           setStartTime(sd.toTimeString().split(' ')[0].substring(0, 5));
           const ed = new Date(myAuction.endDate || myAuction.EndDate);
           setDurationMinutes(Math.round((ed.getTime() - sd.getTime()) / 60000).toString());
@@ -1031,11 +1179,12 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
         StartingPrice: parseFloat(startingPrice),
         ReservePrice: reservePrice ? parseFloat(reservePrice) : null,
         MinBidIncrement: parseFloat(minBidIncrement),
-        StartDate: startDateTime.toISOString(),
-        EndDate: endDateTime.toISOString()
+        StartDate: startDateTime.toLocaleString('sv-SE').slice(0, 10),
+        EndDate: endDateTime.toLocaleString('sv-SE').slice(0, 10)
       };
       const token = auth.getToken();
       const res = await api.patch(`/api/auctions/${auctionId}`, payload, false, token!);
+
       if (res.success) onSuccess();
       else onError(res.message);
     } catch (err: any) { onError(err.message); } finally { setLoading(false); }

@@ -1,5 +1,3 @@
-import { log } from "console";
-
 const BASE_URL = 'http://localhost:5000';
 
 export interface ApiResponse<T = any> {
@@ -30,8 +28,6 @@ export const api = {
 
   async post<T>(path: string, body: any, isMultipart = false, token?: string): Promise<ApiResponse<T>> {
     const headers: HeadersInit = {};
-    console.log(body);
-
     if (!isMultipart) headers['Content-Type'] = 'application/json';
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -41,7 +37,6 @@ export const api = {
       body: isMultipart ? body : JSON.stringify(body),
     });
     const text = await res.text();
-    console.log(JSON.parse(text));
     try {
       return JSON.parse(text);
     } catch (e) {

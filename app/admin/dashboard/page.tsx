@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { api, ApiResponse } from '@/lib/api';
 import { auth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+import AdminNavbar from '@/components/AdminNavbar';
 
 export default function AdminDashboard() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -59,8 +60,8 @@ export default function AdminDashboard() {
     const filterPayload = {
       name: searchName || undefined,
       email: searchEmail || undefined,
-      from: activeTab !== 'pending' && searchFrom ? new Date(searchFrom).toISOString() : undefined,
-      to: activeTab !== 'pending' && searchTo ? new Date(searchTo).toISOString() : undefined,
+      from: activeTab !== 'pending' && searchFrom ? new Date(searchFrom).toLocaleString('sv-SE').replace(' ', 'T') : undefined,
+      to: activeTab !== 'pending' && searchTo ? new Date(searchTo).toLocaleString('sv-SE').replace(' ', 'T') : undefined,
       pending: activeTab === 'pending',
       mine: activeTab === 'mine',
       page: page,
@@ -69,7 +70,7 @@ export default function AdminDashboard() {
 
     try {
       const res = await api.post(`/api/admin-request/filter`, filterPayload, false, token!);
-      console.log(res)
+
       if (res.success) {
         const dataArr = (res.data as any[]) || [];
         setHasMore(dataArr.length === 10);
@@ -165,18 +166,8 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold tracking-tight">Admin <span className="text-red-500">Dashboard</span></h1>
-          <div className="flex gap-4">
-            <button onClick={() => router.push('/admin/dashboard')} className="text-sm font-bold text-red-500 hover:text-red-400 transition-colors">Users</button>
-            <button onClick={() => router.push('/admin/products')} className="text-sm font-medium hover:text-red-400 transition-colors">Products</button>
-            <button onClick={() => router.push('/profile')} className="text-sm font-medium hover:text-red-400 transition-colors">My Profile</button>
-            <button onClick={() => auth.logout()} className="text-sm font-medium hover:text-red-400 transition-colors">Logout</button>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-slate-50 page-enter">
+      <AdminNavbar />
 
       <main className="max-w-7xl mx-auto p-8">
         <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -301,7 +292,7 @@ export default function AdminDashboard() {
         )}
 
         {notification && (
-          <div className={`fixed bottom-8 right-8 p-4 rounded-xl shadow-2xl z-50 animate-bounce ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
+          <div className={`fixed bottom-8 right-8 p-4 rounded-xl shadow-2xl z-50 animate-slide-up ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
             <p className="font-bold flex items-center gap-2">
               {notification.type === 'error' ? 'Oops!' : 'Success!'}
               <span className="font-normal">{notification.msg}</span>
