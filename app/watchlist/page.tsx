@@ -18,6 +18,20 @@ export default function WatchlistPage() {
   // per-auction realtime data: { secondsRemaining, lastBid, status, message, endDate }
   const [auctionRtData, setAuctionRtData] = useState<Record<string, any>>({});
   const joinedRoomsRef = useRef<Set<string>>(new Set());
+  
+  // Filters and Pagination
+  const [nameFilter, setNameFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [startDateFilter, setStartDateFilter] = useState('');
+  const [endDateFilter, setEndDateFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalItems, setTotalItems] = useState(0);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
   const currentUser = auth.getUser();
   const router = useRouter();
 
@@ -35,22 +49,62 @@ export default function WatchlistPage() {
   };
 
   useEffect(() => {
-    if (!currentUser) { router.push('/login'); return; }
-    fetchWatchedAuctions();
+    const init = async () => {
+      let user = auth.getUser();
+
+      if (!user) {
+        const refreshed = await auth.refreshUser();
+        if (!refreshed) {
+          router.push('/login');
+          return;
+        }
+        user = auth.getUser();
+      }
+
+      if (!user) { router.push('/login'); return; }
+    };
+    init();
 
     // Cleanup on unmount — leave all joined rooms safely
     return () => {
-      getAuctionConnection(auth.getToken()!).then(conn => {
+      getAuctionConnection().then(conn => {
         if (!conn) return;
         joinedRoomsRef.current.forEach(id => leaveAuctionRoomSafe(conn, id));
         joinedRoomsRef.current.clear();
       });
     };
-  }, []);
+  }, []); // Only once on mount
+
+  // Handle filter changes (Reset to page 1)
+  useEffect(() => {
+    setPage(1);
+    fetchWatchedAuctions(1, false);
+  }, [nameFilter, statusFilter, startDateFilter, endDateFilter]);
+
+  // Infinite Scroll Trigger
+  useEffect(() => {
+    if (loading || isFetchingMore || !hasMore) return;
+
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prev => {
+          const nextPage = prev + 1;
+          fetchWatchedAuctions(nextPage, true);
+          return nextPage;
+        });
+      }
+    });
+
+    if (sentinelRef.current) observerRef.current.observe(sentinelRef.current);
+
+    return () => observerRef.current?.disconnect();
+  }, [loading, isFetchingMore, hasMore]);
 
   const setupSignalR = useCallback(async (auctionList: any[]) => {
-    const token = auth.getToken();
-    if (!token) return;
+    const user = auth.getUser();
+    if (!user) return;
 
     // Join rooms for: already Live OR any auction whose startDate is TODAY (in local IST time)
     // Using sv-SE locale format for accurate local date string comparison.
@@ -71,7 +125,7 @@ export default function WatchlistPage() {
     if (toJoin.length === 0) return;
 
     // Get (or create) the global connection — guaranteed Connected when returned
-    const conn = await getAuctionConnection(token);
+    const conn = await getAuctionConnection();
     if (!conn) return;
 
     // Register all event handlers once (guard with off() first to avoid duplicates)
@@ -175,25 +229,44 @@ export default function WatchlistPage() {
     }
   }, []);
 
-  const fetchWatchedAuctions = async () => {
+  const fetchWatchedAuctions = async (pageNum: number, append: boolean = false) => {
     try {
-      setLoading(true);
+      if (append) setIsFetchingMore(true);
+      else setLoading(true);
 
+      const queryParams = new URLSearchParams();
+      queryParams.append('page', pageNum.toString());
+      queryParams.append('size', pageSize.toString());
+      if (nameFilter) queryParams.append('name', nameFilter);
+      if (statusFilter) queryParams.append('status', statusFilter);
+      if (startDateFilter) queryParams.append('startDate', startDateFilter);
+      if (endDateFilter) queryParams.append('endDate', endDateFilter);
 
-      const token = auth.getToken();
-      const res = await api.get('/api/Watchlist/watched', token!);
+      const res = await api.get(`/api/Watchlist/watched?${queryParams.toString()}`);
       if (res.success && res.data) {
-        const list = res.data as any[];
-        setAuctions(list);
+        const data = res.data as any;
+        const list = Array.isArray(data) ? data : (data.items || []);
+        const total = Array.isArray(data) ? list.length : (data.total || list.length);
+        
+        if (append) {
+          setAuctions(prev => [...prev, ...list]);
+        } else {
+          setAuctions(list);
+        }
+        setTotalItems(total);
+        setHasMore(list.length === pageSize);
         setupSignalR(list);
       } else {
-        setAuctions([]);
+        if (!append) setAuctions([]);
+        setHasMore(false);
       }
     } catch (err) {
       console.error(err);
-      setAuctions([]);
+      if (!append) setAuctions([]);
+      setHasMore(false);
     } finally {
       setLoading(false);
+      setIsFetchingMore(false);
     }
   };
 
@@ -225,6 +298,73 @@ export default function WatchlistPage() {
           <p className="text-slate-500">Keep track of upcoming and currently live auctions you&apos;re interested in.</p>
         </header>
 
+        {/* Filters */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 z-20 relative">
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Product Name</label>
+              <input 
+                type="text" 
+                value={nameFilter} 
+                onChange={e => { setNameFilter(e.target.value); setPage(1); }} 
+                placeholder="Search watched auctions" 
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none transition-all text-sm" 
+              />
+            </div>
+
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Status</label>
+              <select 
+                value={statusFilter} 
+                onChange={e => { setStatusFilter(e.target.value); setPage(1); }} 
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm text-slate-600"
+              >
+                <option value="">All Statuses</option>
+                <option value="Upcoming">Upcoming</option>
+                <option value="Live">Live</option>
+                <option value="Ended">Ended</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="UnVerified">UnVerified</option>
+              </select>
+            </div>
+
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Start Date</label>
+              <input 
+                type="date" 
+                value={startDateFilter} 
+                onChange={e => { setStartDateFilter(e.target.value); setPage(1); }} 
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm" 
+              />
+            </div>
+
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">End Date</label>
+              <input 
+                type="date" 
+                value={endDateFilter} 
+                onChange={e => { setEndDateFilter(e.target.value); setPage(1); }} 
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm" 
+              />
+            </div>
+
+            <div className="flex-none">
+              <button 
+                onClick={() => {
+                  setNameFilter('');
+                  setStatusFilter('');
+                  setStartDateFilter('');
+                  setEndDateFilter('');
+                  setPage(1);
+                }} 
+                className="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
             <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
@@ -242,34 +382,52 @@ export default function WatchlistPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {auctions.map((auction: any) => (
-              <WatchedAuctionCard
-                key={auction.id || auction.Id}
-                auction={auction}
-                viewerCount={viewerCounts[String(auction.id || auction.Id)]}
-                rtData={auctionRtData[String(auction.id || auction.Id)]}
-                onViewDetails={(prod) => {
-                  setSelectedProduct({ ...prod, auctionPrice: auction.startingPrice || auction.StartingPrice });
-                  setIsProductModalOpen(true);
-                }}
-                onUnwatch={(msg, ok) => {
-                  showToast(msg, ok ? 'success' : 'error');
-                  if (ok) {
-                    const removedId = String(auction.id || auction.Id);
-                    setAuctions(prev => prev.filter(a => String(a.id || a.Id) !== removedId));
-                    // Leave SignalR room if joined
-                    if (joinedRoomsRef.current.has(removedId)) {
-                      getAuctionConnection(auth.getToken()!).then(conn => {
-                        conn?.invoke('LeaveAuction', removedId).catch(console.error);
-                      });
-                      joinedRoomsRef.current.delete(removedId);
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {auctions.map((auction: any) => (
+                <WatchedAuctionCard
+                  key={auction.id || auction.Id}
+                  auction={auction}
+                  viewerCount={viewerCounts[String(auction.id || auction.Id)]}
+                  rtData={auctionRtData[String(auction.id || auction.Id)]}
+                  onViewDetails={(prod) => {
+                    setSelectedProduct({ ...prod, auctionPrice: auction.startingPrice || auction.StartingPrice });
+                    setIsProductModalOpen(true);
+                  }}
+                  onUnwatch={(msg, ok) => {
+                    showToast(msg, ok ? 'success' : 'error');
+                    if (ok) {
+                      const removedId = String(auction.id || auction.Id);
+                      setAuctions(prev => prev.filter(a => String(a.id || a.Id) !== removedId));
+                      // Leave SignalR room if joined
+                      if (joinedRoomsRef.current.has(removedId)) {
+                        getAuctionConnection().then(conn => {
+                          conn?.invoke('LeaveAuction', removedId).catch(console.error);
+                        });
+                        joinedRoomsRef.current.delete(removedId);
+                      }
                     }
-                  }
-                }}
-              />
-            ))}
-          </div>
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Pagination Controls — Infinite Scroll Sentinel */}
+            <div ref={sentinelRef} className="mt-12 mb-8 h-20 flex flex-col items-center justify-center">
+              {isFetchingMore && (
+                <>
+                  <div className="w-8 h-8 border-3 border-brand-accent border-t-transparent rounded-full animate-spin mb-3" />
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Loading more items...</p>
+                </>
+              )}
+              {!hasMore && auctions.length > 0 && page > 1 && (
+                <div className="flex flex-col items-center text-slate-300">
+                  <div className="h-px w-24 bg-slate-100 mb-4" />
+                  <p className="text-xs font-bold uppercase tracking-[0.2em]">End of your watchlist</p>
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         {/* Product Details Modal */}
@@ -344,10 +502,9 @@ function WatchedAuctionCard({ auction, onViewDetails, onUnwatch, viewerCount, rt
   useEffect(() => {
     const fetchOwner = async () => {
       try {
-        const token = auth.getToken();
         const userId = auction.createdByUserId || auction.CreatedByUserId;
         if (!userId) return;
-        const res = await api.get(`/api/user/profile/${userId}`, token!);
+        const res = await api.get(`/api/user/profile/${userId}`);
         if (res.success && res.data) setOwnerInfo(res.data);
       } catch (err) { console.error('Failed to fetch owner details', err); }
     };
@@ -383,8 +540,7 @@ function WatchedAuctionCard({ auction, onViewDetails, onUnwatch, viewerCount, rt
   const handleQuickView = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const token = auth.getToken();
-      const res = await api.post('/api/Product/all', { productId: auction.productId || auction.ProductId }, false, token!);
+      const res = await api.post('/api/Product/all', { productId: auction.productId || auction.ProductId }, false);
       if (res.success && res.data) {
         const arr = res.data as any[];
         if (arr.length > 0) onViewDetails({ ...arr[0], auctionPrice: auction.startingPrice || auction.StartingPrice });
@@ -397,9 +553,8 @@ function WatchedAuctionCard({ auction, onViewDetails, onUnwatch, viewerCount, rt
     if (unwatching) return;
     setUnwatching(true);
     try {
-      const token = auth.getToken();
       const auctionId = auction.id || auction.Id;
-      const res = await api.delete(`/api/Watchlist/${auctionId}/watch`, token!);
+      const res = await api.delete(`/api/Watchlist/${auctionId}/watch`);
       onUnwatch(res.message || (res.success ? 'Removed from watchlist' : 'Could not remove'), res.success);
     } catch (err: any) {
       onUnwatch(err?.message || 'Something went wrong', false);
@@ -609,9 +764,8 @@ function ProductDetailsModal({ isOpen, product, onClose, currentUser }: any) {
     if (ownerInfo) { setShowOwner(!showOwner); return; }
     setLoadingOwner(true);
     try {
-      const token = auth.getToken();
       const userId = product.userId || product.user_id;
-      const res = await api.get(`/api/user/profile/${userId}`, token!);
+      const res = await api.get(`/api/user/profile/${userId}`);
       if (res.success) { setOwnerInfo(res.data); setShowOwner(true); }
     } catch (err) { console.error('Failed to fetch owner details', err); }
     finally { setLoadingOwner(false); }

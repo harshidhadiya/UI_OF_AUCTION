@@ -10,7 +10,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'mine'>('mine');
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // Search Filters
@@ -37,11 +37,25 @@ export default function ProductsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!currentUser) {
-      router.push('/login');
-      return;
-    }
-    fetchProducts(page > 1);
+    const init = async () => {
+      let user = auth.getUser();
+
+      if (!user) {
+        const refreshed = await auth.refreshUser();
+        if (!refreshed) {
+          router.push('/login');
+          return;
+        }
+        user = auth.getUser();
+      }
+
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+      fetchProducts(page > 1);
+    };
+    init();
   }, [page, activeTab, searchTrigger, verifiedFilter]);
 
   useEffect(() => {
@@ -67,7 +81,6 @@ export default function ProductsPage() {
   const fetchProducts = async (isLoadMore = false) => {
     setLoading(true);
     if (!isLoadMore) setIs404(false);
-    const token = auth.getToken();
 
     const payload = {
       mine: activeTab === 'mine',
@@ -82,7 +95,7 @@ export default function ProductsPage() {
     };
 
     try {
-      const res = await api.post('/api/Product/all', payload, false, token!);
+      const res = await api.post('/api/Product/all', payload, false);
       if (res.success && res.data) {
         const newData = res.data as any[];
         setHasMore(newData.length === 10);
@@ -95,6 +108,7 @@ export default function ProductsPage() {
           }
           setHasMore(false);
         } else {
+          console.log("entered")
           showNotification(res.message || "Failed to fetch products", 'error');
           if (!isLoadMore) setProducts([]);
         }
@@ -149,20 +163,6 @@ export default function ProductsPage() {
           </div>
 
           <div className="flex gap-4 flex-col sm:flex-row">
-            <div className="flex bg-slate-200/50 p-1.5 rounded-2xl border border-slate-200/60 backdrop-blur-sm self-start">
-              <button
-                onClick={() => { setActiveTab('all'); handleClear(); }}
-                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'all' ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                All Products
-              </button>
-              <button
-                onClick={() => { setActiveTab('mine'); handleClear(); }}
-                className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'mine' ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                My Products
-              </button>
-            </div>
             {(currentUser?.role === 'SELLER' || currentUser?.role === 'USER') && (
               <button onClick={() => setIsModalOpen(true)} className="premium-button bg-brand-accent text-white shadow-brand-accent/20">
                 + Add Product
@@ -229,7 +229,7 @@ export default function ProductsPage() {
         {loading && products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
             <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 font-medium tracking-wide">Fetching global catalogue...</p>
+            <p className="text-slate-400 font-medium tracking-wide">Fetching your items...</p>
           </div>
         ) : is404 || products.length === 0 ? (
           <div className="bg-white rounded-[2.5rem] p-24 text-center shadow-sm border border-slate-100">
@@ -419,9 +419,8 @@ function ProductDetailsModal({ isOpen, product, currentUser, onClose, onDeleteSu
   const checkExistingAuction = async () => {
     setLoadingAuction(true);
     try {
-      const token = auth.getToken();
       // Use more targeted query as per user request
-      const res = await api.get(`/api/auctions?productId=${product.id || product.Id}`, token!);
+      const res = await api.get(`/api/auctions?productId=${product.id || product.Id}`);
       if (res.success && res.data && (res.data as any).items) {
         // Auction list is in res.data.items
         const myAuction = (res.data as any).items[0];
@@ -443,8 +442,7 @@ function ProductDetailsModal({ isOpen, product, currentUser, onClose, onDeleteSu
   const fetchOwnerDetail = async () => {
     setLoadingOwner(true);
     try {
-      const token = auth.getToken();
-      const res = await api.get(`/api/User/profile/${product.user_id || product.userId}`, token!);
+      const res = await api.get(`/api/User/profile/${product.user_id || product.userId}`);
       if (res.success && res.data) {
         setOwnerDetail(res.data);
       }
@@ -459,8 +457,7 @@ function ProductDetailsModal({ isOpen, product, currentUser, onClose, onDeleteSu
     if (!confirm('Are you sure you want to delete this product?')) return;
     setIsDeleting(true);
     try {
-      const token = auth.getToken();
-      const res = await api.delete(`/api/Product/${product.id || product.Id}`, token!);
+      const res = await api.delete(`/api/Product/${product.id || product.Id}`);
       if (res.success) {
         onDeleteSuccess?.(res.message || 'Product deleted successfully');
       } else {
@@ -683,8 +680,7 @@ function CreateProductModal({ isOpen, onClose, onSuccess, onError }: any) {
     });
 
     try {
-      const token = auth.getToken();
-      const res = await api.post('/api/Product', formData, true, token!);
+      const res = await api.post('/api/Product', formData, true);
       if (res.success) {
         // Clear form
         setName(''); setDescPoints(['']); setBuyDate(''); setImages([]);
@@ -879,9 +875,8 @@ function UpdateProductModal({ isOpen, product, onClose, onSuccess, onError }: an
 
     try {
       setLoading(true);
-      const token = auth.getToken();
 
-      const res = await api.delete(`/api/Product/${product.id}/images/${imageId}`, token!);
+      const res = await api.delete(`/api/Product/${product.id}/images/${imageId}`);
       if (res.success) {
         setDeletedImageIds(prev => [...prev, imageId]);
         handleRemoveReplacement(imageId); // Cancel any replacements if it gets deleted
@@ -912,16 +907,14 @@ function UpdateProductModal({ isOpen, product, onClose, onSuccess, onError }: an
     });
 
     try {
-      const token = auth.getToken();
-
-      const res = await api.patch(`/api/Product/${product.id}`, formData, true, token!);
+      const res = await api.patch(`/api/Product/${product.id}`, formData, true);
       let imagesRes: any = { success: true, message: '' };
 
       if (res.success && newImages.length > 0) {
         const imageFormData = new FormData();
         imageFormData.append('id', product.id.toString());
         newImages.forEach(img => imageFormData.append('images', img));
-        imagesRes = await api.post('/api/Product/images', imageFormData, true, token!);
+        imagesRes = await api.post('/api/Product/images', imageFormData, true);
       }
 
       if (res.success && imagesRes.success) {
@@ -1111,13 +1104,11 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
         EndDate: endDateTime.toLocaleString('sv-SE').replace(' ', 'T')
       };
 
-      const token = auth.getToken();
-
       // [SMART CHECK] If an auction already exists for this product, we should use PATCH instead of POST /api/verify/auction.
       let existingAuctionId = null;
       let existingAuction = null;
       try {
-        const checkRes = await api.get(`/api/auctions?productId=${product.id || product.Id}`, token!);
+        const checkRes = await api.get(`/api/auctions?productId=${product.id || product.Id}`);
         if (checkRes.success && checkRes.data && (checkRes.data as any).items && (checkRes.data as any).items.length > 0) {
           existingAuction = (checkRes.data as any).items[0];
           existingAuctionId = existingAuction.id || existingAuction.Id;
@@ -1140,10 +1131,10 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
         }
 
         // If it exists, use the update (PATCH) endpoint correctly as per user request
-        res = await api.patch(`/api/auctions/${existingAuctionId}`, patchPayload, false, token!);
+        res = await api.patch(`/api/auctions/${existingAuctionId}`, patchPayload, false);
       } else {
         // Otherwise, use the initial launch (POST) endpoint
-        res = await api.post('/api/verify/auction', payload, false, token!);
+        res = await api.post('/api/verify/auction', payload, false);
       }
 
       if (res.success) {
@@ -1271,8 +1262,7 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
   const fetchAuctionDetails = async () => {
     setFetching(true);
     try {
-      const token = auth.getToken();
-      const res = await api.get('/api/auctions/created', token!);
+      const res = await api.get('/api/auctions/created');
       if (res.success && res.data) {
         const auctions = res.data as any[];
         const myAuction = auctions.find(a => (a.productId || a.ProductId) === (product.id || product.Id));
@@ -1342,8 +1332,7 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
         EndDate: endDateTime ? endDateTime.toLocaleString('sv-SE').replace(' ', 'T') : null
       };
 
-      const token = auth.getToken();
-      const res = await api.patch(`/api/auctions/${auctionId}`, payload, false, token!);
+      const res = await api.patch(`/api/auctions/${auctionId}`, payload, false);
 
       if (res.success) {
         onSuccess();

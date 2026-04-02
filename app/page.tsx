@@ -1,39 +1,79 @@
 'use client';
-import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/auth";
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    let active = true;
+    
+    const checkAuthAndRedirect = async () => {
+      try {
+        console.log('[Root] Initializing session check...');
+        // We add a safety timeout as well
+        const timeout = setTimeout(() => {
+          if (active) {
+            console.log('[Root] Redirection timeout fallback...');
+            router.replace('/login');
+          }
+        }, 5000);
+
+        const ok = await auth.tryRefresh();
+        clearTimeout(timeout);
+        
+        if (!active) return;
+
+        if (ok) {
+          const user = auth.getUser();
+          console.log('[Root] Session active, role:', user?.role);
+          if (user?.role === 'ADMIN') {
+            router.replace('/admin/dashboard');
+          } else {
+            router.replace('/dashboard');
+          }
+        } else {
+          console.log('[Root] No active session, heading to login');
+          router.replace('/login');
+        }
+      } catch (err) {
+        console.error('[Root] Redirection error:', err);
+        if (active) router.replace('/login');
+      }
+    };
+
+    checkAuthAndRedirect();
+    return () => { active = false; };
+  }, [router]);
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-brand-dark to-brand-accent text-white">
-      <h1 className="text-5xl font-bold mb-4 tracking-tight">Auction Central</h1>
-      <p className="text-xl mb-12 opacity-90 max-w-md text-center">
-        The most advanced, premium auction platform for real business.
-      </p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-        <div className="premium-card p-8 flex flex-col items-center bg-white/10 backdrop-blur-md border-white/20">
-          <h2 className="text-2xl font-semibold mb-4">User Portal</h2>
-          <div className="flex flex-col gap-3 w-full">
-            <Link href="/login" className="premium-button bg-white text-brand-accent hover:bg-white/90 text-center">
-              Login as User
-            </Link>
-            <Link href="/register" className="premium-button bg-transparent border border-white hover:bg-white/10 text-center">
-              Register as User
-            </Link>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+      <div className="flex flex-col items-center">
+        <div className="relative">
+          <div className="w-20 h-20 bg-brand-accent rounded-[2rem] mb-8 flex items-center justify-center text-white font-black text-3xl shadow-2xl shadow-brand-accent/20 animate-bounce">
+            A
           </div>
+          <div className="absolute inset-0 bg-brand-accent/20 rounded-[2rem] animate-ping" />
         </div>
         
-        <div className="premium-card p-8 flex flex-col items-center bg-white/10 backdrop-blur-md border-white/20">
-          <h2 className="text-2xl font-semibold mb-4">Admin Portal</h2>
-          <div className="flex flex-col gap-3 w-full">
-            <Link href="/admin/login" className="premium-button bg-brand-medium text-brand-accent hover:bg-brand-medium/90 text-center">
-              Login as Admin
-            </Link>
-            <Link href="/admin/register" className="premium-button bg-transparent border border-white hover:bg-white/10 text-center">
-              Register as Admin
-            </Link>
-          </div>
+        <div className="h-1.5 w-64 bg-slate-100 rounded-full overflow-hidden mb-4 p-[1px]">
+          <div className="h-full bg-brand-accent w-full origin-left animate-[loading_1.5s_infinite_ease-in-out]" />
         </div>
+        
+        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] ml-[0.3em] animate-pulse">
+          Establishing Secure Session
+        </p>
       </div>
+      
+      <style jsx>{`
+        @keyframes loading {
+          0% { transform: scaleX(0); transform-origin: left; }
+          50% { transform: scaleX(1); transform-origin: left; }
+          51% { transform: scaleX(1); transform-origin: right; }
+          100% { transform: scaleX(0); transform-origin: right; }
+        }
+      `}</style>
     </div>
   );
 }

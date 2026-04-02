@@ -7,13 +7,14 @@ import { BRAND_NAME } from '@/lib/constants';
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/auctions', label: 'Auctions' },
-  { href: '/my-auctions', label: 'My Auctions' },
   { href: '/products', label: 'Products' },
   { href: '/participations', label: 'Participations' },
   { href: '/watchlist', label: 'Watchlist' },
   { href: '/profile', label: 'Profile' },
 ];
 
+
+const currentNotShows = ["/participations", "/auctions", "/watchlist"];
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
@@ -35,23 +36,25 @@ export default function Navbar() {
 
         <div className="flex items-center gap-1">
           {NAV_LINKS.map((link) => {
+            if ("/dashboard" == pathname && currentNotShows.includes(link.href))
+              return null;
+
             const isActive = pathname === link.href;
             return (
               <button
                 key={link.href}
                 onClick={() => router.push(link.href)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'bg-white/10 text-white font-bold'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                  ? 'bg-white/10 text-white font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
               >
                 {link.label}
               </button>
             );
           })}
           <button
-            onClick={() => auth.logout()}
+            onClick={() => auth.logoutUser()}
             className="ml-2 px-3 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
           >
             Logout

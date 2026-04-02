@@ -58,11 +58,25 @@ function AuctionsContent() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!currentUser) {
-      router.push('/login');
-      return;
-    }
-    fetchAuctions(page > 1);
+    const init = async () => {
+      let user = auth.getUser();
+
+      if (!user) {
+        const refreshed = await auth.refreshUser();
+        if (!refreshed) {
+          router.push('/login');
+          return;
+        }
+        user = auth.getUser();
+      }
+
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+      fetchAuctions(page > 1);
+    };
+    init();
   }, [page, searchTrigger, mine, status]);
 
   useEffect(() => {
@@ -88,7 +102,6 @@ function AuctionsContent() {
   const fetchAuctions = async (isLoadMore = false) => {
     setLoading(true);
     if (!isLoadMore) setIs404(false);
-    const token = auth.getToken();
 
     const queryParams = new URLSearchParams();
     queryParams.append('Page', page.toString());
@@ -100,8 +113,8 @@ function AuctionsContent() {
     if (mine) queryParams.append('mine', 'true');
 
     try {
-      const res = await api.get(`/api/auctions?${queryParams.toString()}`, token!);
-
+      const res = await api.get(`/api/auctions?${queryParams.toString()}`);
+      console.log(res);
       if (res.success && (res.data as any)?.items) {
         const newData = (res.data as any).items as any[];
         setHasMore(newData.length === 20); // matching PageSize
@@ -357,8 +370,7 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, 
     e.stopPropagation();
     if (!confirm('Are you sure you want to cancel this auction?')) return;
     try {
-      const token = auth.getToken();
-      const res = await api.delete(`/api/auctions/${auction.id || auction.Id}`, token!);
+      const res = await api.delete(`/api/auctions/${auction.id || auction.Id}`);
       if (res.success) {
         onRefresh(); // Trigger refresh instead of opening update modal
       } else {
@@ -388,8 +400,7 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, 
   const handleWatch = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const token = auth.getToken();
-      const res = await api.post(`/api/Watchlist/${auction.id || auction.Id}/watch`, {}, false, token!);
+      const res = await api.post(`/api/Watchlist/${auction.id || auction.Id}/watch`, {}, false);
       if (res.success) {
         setIsWatched(true);
         if (onWatchSuccess) onWatchSuccess(res.message || "Auction watched successfully");
@@ -408,8 +419,7 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, 
   const handleQuickView = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const token = auth.getToken();
-      const res = await api.post('/api/Product/all', { productId: auction.productId || auction.ProductId }, false, token!);
+      const res = await api.post('/api/Product/all', { productId: auction.productId || auction.ProductId }, false);
       if (res.success && res.data) {
         const productsArray = res.data as any[];
         if (productsArray.length > 0) {
@@ -467,14 +477,15 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, 
         )}
 
         <div className="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100/50 flex-1">
-          {status === 'Live' && (auction.currentHighestBid || auction.CurrentHighestBid) > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Curr Bid</span>
-              <span className="font-black text-brand-accent text-lg flex items-baseline gap-1">
-                <span className="text-xs">₹</span>{(auction.currentHighestBid || auction.CurrentHighestBid || 0).toLocaleString()}
-              </span>
-            </div>
-          )}
+          {status
+            !== 'Upcoming' && (auction.currentHighestBid || auction.CurrentHighestBid) > 0 && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">{status == "Live" ? "Current Bid" : status == "Ended" ? "Final Price" : "Last Bid"}</span>
+                <span className="font-black text-brand-accent text-lg flex items-baseline gap-1">
+                  <span className="text-xs">₹</span>{(auction.currentHighestBid || auction.CurrentHighestBid || 0).toLocaleString()}
+                </span>
+              </div>
+            )}
 
           {(auction.startingPrice || auction.StartingPrice) > 0 && (
             <div className="flex justify-between items-center text-sm">
@@ -558,22 +569,22 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, 
             </button>
           )}
 
-          {!isMine && status === 'Live' && (
+          {status === 'Live' && (
             <button
               onClick={async (e) => {
                 e.stopPropagation();
-                if (!isWatched) {
-                  try {
-                    const token = auth.getToken();
-                    await api.post(`/api/Watchlist/${auction.id || auction.Id}/watch`, {}, false, token!);
-                  } catch (err) { /* ignore */ }
-                }
+                if (!isMine)
+                  if (!isWatched) {
+                    try {
+                      await api.post(`/api/Watchlist/${auction.id || auction.Id}/watch`, {}, false);
+                    } catch (err) { /* ignore */ }
+                  }
                 router.push(`/auction/${auction.id || auction.Id}`);
               }}
               className="flex-1 py-3 bg-red-50 text-red-600 hover:bg-brand-accent hover:text-white border border-red-200 hover:border-brand-accent rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-              Participate Now
+              {isMine ? 'View Auction' : 'Participate Now'}
             </button>
           )}
 
@@ -647,6 +658,9 @@ function StandaloneUpdateAuctionModal({ isOpen, auction, onClose, onSuccess, onE
 
       if (startDate && startTime) {
         startDateTime = new Date(`${startDate}T${startTime}`);
+        if (startDateTime <= new Date()) {
+          return onError("Start time must be in the future.");
+        }
         if (durationMinutes) {
           const duration = parseInt(durationMinutes);
           endDateTime = new Date(startDateTime.getTime() + duration * 60000);
@@ -665,9 +679,7 @@ function StandaloneUpdateAuctionModal({ isOpen, auction, onClose, onSuccess, onE
         payload.StartingPrice = startingPrice ? parseFloat(startingPrice) : null;
       }
 
-      const token = auth.getToken();
-
-      const res = await api.patch(`/api/auctions/${auctionId}`, payload, false, token!);
+      const res = await api.patch(`/api/auctions/${auctionId}`, payload, false);
 
       if (res.success) {
         onSuccess();
@@ -815,9 +827,8 @@ function ProductDetailsModal({ isOpen, product, onClose, currentUser, onLaunchAu
     }
     setLoadingOwner(true);
     try {
-      const token = auth.getToken();
       const userId = product.userId || product.user_id;
-      const res = await api.get(`/api/user/profile/${userId}`, token!);
+      const res = await api.get(`/api/user/profile/${userId}`);
       if (res.success) {
         setOwnerInfo(res.data);
         setShowOwner(true);
@@ -1028,6 +1039,9 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
     try {
       setLoading(true);
       const startDateTime = new Date(`${startDate}T${startTime}`);
+      if (startDateTime <= new Date()) {
+        return onError("Start time must be in the future.");
+      }
       const duration = parseInt(durationMinutes);
       const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
 
@@ -1040,13 +1054,12 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
         EndDate: endDateTime.toLocaleString('sv-SE').replace(' ', 'T')
       };
 
-      const token = auth.getToken();
-
-      // [UPDATE] Check if an auction already exists for this product.
       // If it exists (e.g. status was UnVerified), we should use PATCH instead of POST /api/verify/auction.
       let existingAuctionId = null;
       try {
-        const createdRes = await api.get('/api/auctions/created', token!);
+        const createdRes = await api.get('/api/auctions/created');
+        console.log("here")
+        console.log(createdRes)
         if (createdRes.success && createdRes.data) {
           const auctions = createdRes.data as any[];
           const myAuction = auctions.find(a => (a.productId === product.id || a.ProductId === product.id));
@@ -1065,10 +1078,10 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
           MinBidIncrement: parseFloat(minBidIncrement),
           StartDate: startDateTime.toLocaleString('sv-SE').replace(' ', 'T'),
           EndDate: endDateTime.toLocaleString('sv-SE').replace(' ', 'T')
-        }, false, token!);
+        }, false);
       } else {
         // Otherwise, use the initial launch (POST) endpoint
-        res = await api.post('/api/verify/auction', payload, false, token!);
+        res = await api.post('/api/verify/auction', payload, false);
       }
 
       if (res.success) onSuccess();
@@ -1146,8 +1159,8 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
   const fetchAuctionDetails = async () => {
     setFetching(true);
     try {
-      const token = auth.getToken();
-      const res = await api.get('/api/auctions/created', token!);
+      const res = await api.get('/api/auctions/created');
+      console.log(res)
       if (res.success && res.data) {
         const auctions = res.data as any[];
         const myAuction = auctions.find(a => a.productId === product.id || a.ProductId === product.id);
@@ -1174,6 +1187,9 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
     try {
       setLoading(true);
       const startDateTime = new Date(`${startDate}T${startTime}`);
+      if (startDateTime <= new Date()) {
+        return onError("Start time must be in the future.");
+      }
       const endDateTime = new Date(startDateTime.getTime() + parseInt(durationMinutes) * 60000);
       const payload = {
         StartingPrice: parseFloat(startingPrice),
@@ -1182,8 +1198,7 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
         StartDate: startDateTime.toLocaleString('sv-SE').slice(0, 10),
         EndDate: endDateTime.toLocaleString('sv-SE').slice(0, 10)
       };
-      const token = auth.getToken();
-      const res = await api.patch(`/api/auctions/${auctionId}`, payload, false, token!);
+      const res = await api.patch(`/api/auctions/${auctionId}`, payload, false);
 
       if (res.success) onSuccess();
       else onError(res.message);

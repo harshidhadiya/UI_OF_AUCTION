@@ -26,12 +26,26 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const user = auth.getUser();
-    if (!user || user.role !== 'ADMIN') {
-      router.push('/login');
-      return;
-    }
-    fetchFilterData(page > 1);
+    const init = async () => {
+      let user = auth.getUser();
+
+      // If user is missing (e.g. page refresh), try admin refresh
+      if (!user) {
+        const refreshed = await auth.refreshAdmin();
+        if (!refreshed) {
+          router.push('/login');
+          return;
+        }
+        user = auth.getUser();
+      }
+
+      if (!user || user.role !== 'ADMIN') {
+        router.push('/login');
+        return;
+      }
+      fetchFilterData(page > 1);
+    };
+    init();
   }, [page, activeTab, searchTrigger]);
 
   useEffect(() => {
@@ -55,7 +69,6 @@ export default function AdminDashboard() {
   const fetchFilterData = async (isLoadMore = false) => {
     setLoading(true);
     if (!isLoadMore) setIs404(false);
-    const token = auth.getToken();
 
     const filterPayload = {
       name: searchName || undefined,
@@ -69,7 +82,7 @@ export default function AdminDashboard() {
     };
 
     try {
-      const res = await api.post(`/api/admin-request/filter`, filterPayload, false, token!);
+      const res = await api.post(`/api/admin-request/filter`, filterPayload, false);
 
       if (res.success) {
         const dataArr = (res.data as any[]) || [];
@@ -131,9 +144,8 @@ export default function AdminDashboard() {
   };
 
   const fetchUserDetails = async (userid: number) => {
-    const token = auth.getToken();
     try {
-      const res = await api.get(`/api/admin/profile?userid=${userid}`, token!);
+      const res = await api.get(`/api/admin/profile?userid=${userid}`);
       if (res.success) {
         setSelectedUser(res.data);
         setIsModalOpen(true);
@@ -146,11 +158,10 @@ export default function AdminDashboard() {
   };
 
   const handleAction = async (endpoint: string, successMsg: string) => {
-    const token = auth.getToken();
     setIsActionLoading(true);
     try {
       // endpoints are GET according to the reference and controller
-      const res = await api.get(`${endpoint}`, token!);
+      const res = await api.get(`${endpoint}`);
       if (res.success) {
         showNotification(res.message || successMsg, 'success');
         setIsModalOpen(false);
@@ -379,9 +390,8 @@ function DetailsModal({ isOpen, user, onClose, onVerify, onGrant, onRevokeRights
   const fetchVerifierDetail = async () => {
     try {
       setVerifierLoading(true);
-      const token = auth.getToken();
       // Using /api/admin-request/detail/{id} as requested
-      const res = await api.get(`/api/admin-request/details/${user.verifierId || user.id}`, token!);
+      const res = await api.get(`/api/admin-request/details/${user.verifierId || user.id}`);
       if (res.success && res.data) {
         setVerifierDetail(res.data);
       }

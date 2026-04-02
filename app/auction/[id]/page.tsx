@@ -44,8 +44,7 @@ export default function LiveAuctionPage() {
   // ─── Fetch initial data ───────────────────────────────────────────
   const fetchAuction = useCallback(async () => {
     try {
-      const token = auth.getToken();
-      const auctionRes = await api.get(`/api/auctions/${id}`, token!);
+      const auctionRes = await api.get(`/api/auctions/${id}`);
       console.log(auctionRes);
 
       if (auctionRes.success && auctionRes.data) {
@@ -66,7 +65,7 @@ export default function LiveAuctionPage() {
               const isOwnerOrWinner = a.createdByUserId === currentUserData.id || String(winnerId) === String(currentUserData.id);
 
               if (isOwnerOrWinner && winnerId) {
-                const userRes = await api.get(`/api/User/profile/${winnerId}`, token!);
+                const userRes = await api.get(`/api/User/profile/${winnerId}`);
                 if (userRes.success && userRes.data) {
                   const userData = userRes.data as any;
                   winnerObj = {
@@ -98,8 +97,7 @@ export default function LiveAuctionPage() {
   const fetchBids = useCallback(async (pageToFetch: number) => {
     try {
       setBidsLoading(true);
-      const token = auth.getToken();
-      const res = await api.get(`/api/auctions/${id}/bids?page=${pageToFetch}&pageSize=10&size=10&mine=false`, token!);
+      const res = await api.get(`/api/auctions/${id}/bids?page=${pageToFetch}&pageSize=10&size=10&mine=false`);
       if (res.success && res.data) {
         const newBids = (res.data as any).items || [];
         if (pageToFetch === 1) {
@@ -126,8 +124,8 @@ export default function LiveAuctionPage() {
   const fetchMyBids = useCallback(async (pageToFetch: number = 1) => {
     try {
       setMyBidsLoading(true);
-      const token = auth.getToken();
-      const res = await api.get(`/api/auctions/${id}/bids?page=${pageToFetch}&pageSize=10&size=10&mine=true`, token!);
+      const res = await api.get(`/api/auctions/${id}/bids?page=${pageToFetch}&pageSize=10&size=10&mine=true`);
+      console.log(res)
       if (res.success && res.data) {
         const newBids = (res.data as any).items || [];
         if (pageToFetch === 1) {
@@ -152,9 +150,7 @@ export default function LiveAuctionPage() {
 
   // ─── SignalR setup ────────────────────────────────────────────────
   const setupSignalR = useCallback(async () => {
-    const token = auth.getToken();
-    if (!token) return;
-    const conn = await getAuctionConnection(token);
+    const conn = await getAuctionConnection();
     if (!conn) return;
 
     // Register handlers (off first to avoid duplicate registrations)
@@ -235,19 +231,33 @@ export default function LiveAuctionPage() {
   }, [id]);
 
   useEffect(() => {
-    if (!currentUser) { router.push('/login'); return; }
+    const init = async () => {
+      let user = auth.getUser();
 
-    fetchAuction().then(status => {
-      fetchBids(1);
-      fetchMyBids(1);
-      if (status !== 'Ended' && status !== 'Cancelled' && status !== 'UnVerified') {
-        setupSignalR();
+      if (!user) {
+        const refreshed = await auth.refreshUser();
+        if (!refreshed) {
+          router.push('/login');
+          return;
+        }
+        user = auth.getUser();
       }
-    });
+
+      if (!user) { router.push('/login'); return; }
+
+      fetchAuction().then(status => {
+        fetchBids(1);
+        fetchMyBids(1);
+        if (status !== 'Ended' && status !== 'Cancelled' && status !== 'UnVerified') {
+          setupSignalR();
+        }
+      });
+    };
+    init();
 
     // Cleanup: leave room on unmount
     return () => {
-      getAuctionConnection(auth.getToken()!).then(conn => {
+      getAuctionConnection().then(conn => {
         if (!conn || !joinedRef.current) return;
         leaveAuctionRoomSafe(conn, String(id));
         joinedRef.current = false;
@@ -309,8 +319,7 @@ export default function LiveAuctionPage() {
     setBidError('');
     setBidSuccess('');
     try {
-      const token = auth.getToken();
-      const res = await api.post(`/api/auctions/${id}/bids`, { amount: minBidAmount }, false, token!);
+      const res = await api.post(`/api/auctions/${id}/bids`, { amount: minBidAmount });
       if (res.success) {
         setBidSuccess(res.message || 'Bid placed successfully!');
         setMyBidPage(1);
@@ -374,7 +383,7 @@ export default function LiveAuctionPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            {viewerCount !== null && (
+            {viewerCount !== null && isLive && (
               <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full">
                 <svg className="w-3 h-3 text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                 <span className="font-bold text-white">{viewerCount}</span> watching

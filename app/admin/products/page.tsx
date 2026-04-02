@@ -24,12 +24,25 @@ export default function AdminProductsDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const user = auth.getUser();
-    if (!user || user.role !== 'ADMIN') {
-      router.push('/login');
-      return;
-    }
-    fetchProducts(page > 1);
+    const init = async () => {
+      let user = auth.getUser();
+      // If user is missing (e.g. page refresh), try admin refresh
+      if (!user) {
+        const refreshed = await auth.refreshAdmin();
+        if (!refreshed) {
+          router.push('/login');
+          return;
+        }
+        user = auth.getUser();
+      }
+
+      if (!user || user.role !== 'ADMIN') {
+        router.push('/login');
+        return;
+      }
+      fetchProducts(page > 1);
+    };
+    init();
   }, [page, activeTab, searchTrigger]);
 
   useEffect(() => {
@@ -53,7 +66,6 @@ export default function AdminProductsDashboard() {
   const fetchProducts = async (isLoadMore = false) => {
     setLoading(true);
     if (!isLoadMore) setIs404(false);
-    const token = auth.getToken();
 
     const filterPayload = {
       name: searchName || undefined,
@@ -65,7 +77,7 @@ export default function AdminProductsDashboard() {
     };
 
     try {
-      const res = await api.post(`/api/verify/products`, filterPayload, false, token!);
+      const res = await api.post(`/api/verify/products`, filterPayload, false);
       if (res.success) {
 
         const dataArr = (res.data as any[]) || [];
@@ -333,8 +345,6 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
 
   const fetchFullDetails = async () => {
     setFetching(true);
-    const token = auth.getToken();
-
     try {
       // 1. Fetch full product details using /api/Product/all 
       const payload = {
@@ -342,7 +352,7 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
         page: 1,
         size: 1
       };
-      const pRes = await api.post('/api/Product/all', payload, false, token!);
+      const pRes = await api.post('/api/Product/all', payload, false);
       if (pRes.success && pRes.data && (pRes.data as any[]).length > 0) {
         const prod = (pRes.data as any[])[0];
         setFullProduct(prod);
@@ -350,7 +360,7 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
         // 2. Fetch owner/submitter details using userId from product
         const userId = prod.user_id || prod.userId || prod.UserId;
         if (userId) {
-          const uRes = await api.get(`/api/User/profile/${userId}`, token!);
+          const uRes = await api.get(`/api/User/profile/${userId}`);
           if (uRes.success && uRes.data) {
             setOwnerDetail(uRes.data);
           }
@@ -360,7 +370,7 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
       // 3. Fetch verifier details if verifierId exists
       const verifierId = overviewProduct.verifierId || overviewProduct.VerifierId;
       if (verifierId) {
-        const vRes = await api.get(`/api/admin-request/details/${verifierId}`, token!);
+        const vRes = await api.get(`/api/admin-request/details/${verifierId}`);
         if (vRes.success && vRes.data) {
           setVerifierDetail(vRes.data);
         }
@@ -562,8 +572,6 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
                       </div>
                       <button
                         onClick={async () => {
-                          const token = auth.getToken();
-                          if (!token) return;
                           setIsVerifying(true);
                           try {
                             const payload = {
@@ -572,7 +580,7 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
                               description: verifyDescPoints.map(p => p.trim()).filter(Boolean).join(',')
                             };
 
-                            const res = await api.post('/api/verify/product', payload, false, token);
+                            const res = await api.post('/api/verify/product', payload, false);
                             if (res.success) {
                               onClose();
                               if (onVerify) onVerify();
@@ -632,15 +640,13 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
                       </div>
                       <button
                         onClick={async () => {
-                          const token = auth.getToken();
-                          if (!token) return;
                           setIsUnverifying(true);
                           try {
                             const payload = {
                               ProductId: overviewProduct.id || overviewProduct.productId || overviewProduct.ProductId,
                               description: unverifyDescPoints.map(p => p.trim()).filter(Boolean).join(',')
                             };
-                            const res = await api.patch('/api/verify/product', payload, false, token);
+                            const res = await api.patch('/api/verify/product', payload, false);
                             if (res.success) {
                               onClose();
                               if (onVerify) onVerify();

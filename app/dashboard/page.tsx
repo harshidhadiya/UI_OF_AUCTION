@@ -18,15 +18,30 @@ export default function UserDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const userData = auth.getUser();
-    if (!userData || (userData.role !== 'USER' && userData.role !== 'SELLER')) {
-      router.push('/login');
-      return;
-    }
-    setUser(userData);
-    fetchWatchlist();
+    const init = async () => {
+      let userData = auth.getUser();
+
+      // If user is missing (e.g. page refresh), try refreshing
+      if (!userData) {
+        const refreshed = await auth.refreshUser();
+        if (!refreshed) {
+          router.push('/login');
+          return;
+        }
+        userData = auth.getUser();
+      }
+
+      if (!userData || (userData.role !== 'USER' && userData.role !== 'SELLER')) {
+        router.push('/login');
+        return;
+      }
+      setUser(userData);
+      fetchWatchlist();
+    };
+    init();
+
     return () => {
-      getAuctionConnection(auth.getToken()!).then(conn => {
+      getAuctionConnection().then(conn => {
         if (!conn) return;
         joinedRoomsRef.current.forEach(id => leaveAuctionRoomSafe(conn, id));
         joinedRoomsRef.current.clear();
@@ -35,8 +50,10 @@ export default function UserDashboard() {
   }, []);
 
   const setupSignalR = async (auctionList: any[]) => {
-    const token = auth.getToken();
-    if (!token) return;
+    const conn = await getAuctionConnection();
+    if (!conn) return;
+
+    // Use regular now for SignalR room joining decision
     const todayStr = new Date().toLocaleString('sv-SE').slice(0, 10);
     const toJoin = auctionList.filter(a => {
       const startDate = a.startDate || a.StartDate;
@@ -45,9 +62,6 @@ export default function UserDashboard() {
       if (startDate) return new Date(startDate).toLocaleString('sv-SE').slice(0, 10) === todayStr;
       return false;
     });
-    if (toJoin.length === 0) return;
-    const conn = await getAuctionConnection(token);
-    if (!conn) return;
 
     conn.off('AuctionStarted');
     conn.on('AuctionStarted', (data: { auctionId: number }) => {
@@ -56,6 +70,59 @@ export default function UserDashboard() {
       const name = matched?.productName || matched?.ProductName || `Auction #${id}`;
       setAuctionStartedToast({ id, name });
       setTimeout(() => setAuctionStartedToast(null), 8000);
+    });
+
+    conn.off('GetWatchListDetail');
+    conn.on('GetWatchListDetail', async (data: any) => {
+      const incomingId = String(data.id || data.Id || '');
+      if (!incomingId) return;
+
+      // Strict filter for dashboard display: only Live or Upcoming within 2 hours (IST)
+      const now = new Date();
+      const nowIST = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      const twoHoursFromNowIST = new Date(nowIST.getTime() + 2 * 60 * 60 * 1000);
+      const status = data.status || data.Status;
+      const startDateStr = data.startDate || data.StartDate;
+      const startDate = startDateStr ? new Date(new Date(startDateStr).toLocaleString("en-US", { timeZone: "Asia/Kolkata" })) : null;
+
+      const shouldBeInDashboard = status === 'Live' || (status === 'Upcoming' && startDate && startDate > nowIST && startDate <= twoHoursFromNowIST);
+
+      setWatchedAuctions(prev => {
+        const index = prev.findIndex(a => String(a.id || a.Id) === incomingId);
+        if (shouldBeInDashboard) {
+          if (index !== -1) {
+            // Update existing
+            const updatedList = [...prev];
+            updatedList[index] = { ...updatedList[index], ...data };
+            return updatedList;
+          } else {
+            // Append new
+            return [data, ...prev];
+          }
+        } else {
+          // If not in dashboard window (e.g. Ended), remove if previously added
+          if (index !== -1) {
+            return prev.filter(a => String(a.id || a.Id) !== incomingId);
+          }
+          return prev;
+        }
+      });
+
+      // If auction meets join criteria (Live or Starting in < 2 hrs), ensure connected
+      if ((status === 'Live' || (startDate && startDate > nowIST && startDate <= twoHoursFromNowIST))) {
+        if (!joinedRoomsRef.current.has(incomingId)) {
+          console.log(`[SignalR] Auto-joining auction ${incomingId} (Status: ${status}) [IST Window]`);
+          await listenToAuctionSafe(conn, incomingId);
+          joinedRoomsRef.current.add(incomingId);
+        }
+      } else {
+        // If it was previously joined but now outside window (e.g. Ended)
+        if (joinedRoomsRef.current.has(incomingId)) {
+          console.log(`[SignalR] Auto-leaving auction ${incomingId} (Status: ${status}, Outside IST Window)`);
+          await leaveAuctionRoomSafe(conn, incomingId);
+          joinedRoomsRef.current.delete(incomingId);
+        }
+      }
     });
 
     for (const auction of toJoin) {
@@ -71,17 +138,44 @@ export default function UserDashboard() {
 
     try {
       setWatchlistLoading(true);
-      const token = auth.getToken();
-      const res = await api.get('/api/Watchlist/watched', token!);
+
+      const now = new Date();
+      const istDate = new Date(now.getTime() + (2 * 60 * 60 * 1000));
+      const twoHoursFromNow = istDate.toLocaleString('sv-SE', { timeZone: 'Asia/Kolkata' }).replace(' ', 'T');
+      const queryParams = new URLSearchParams();
+      queryParams.append('size', '200');
+      queryParams.append('endDate', twoHoursFromNow);
+      queryParams.append("isdashBoardPage", "true");
+
+      const res = await api.get(`/api/Watchlist/watched?${queryParams.toString()}`);
       if (res.success && res.data) {
-        const list = res.data as any[];
-        setWatchedAuctions(list);
-        setupSignalR(list);
+        const list = Array.isArray(res.data) ? res.data : (res.data as any).items || [];
+
+        // ONLY show Live or Upcoming within 2 hours (IST)
+        const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+        const twoHoursFromNowIST = new Date(nowIST.getTime() + 2 * 60 * 60 * 1000);
+
+        const filteredList = list.filter((a: any) => {
+          const status = a.status || a.Status;
+          const startDateStr = a.startDate || a.StartDate;
+          if (status === 'Live') return true;
+          if (status === 'Upcoming' && startDateStr) {
+            const startDate = new Date(new Date(startDateStr).toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+            return startDate > nowIST && startDate <= twoHoursFromNowIST;
+          }
+          return false;
+        });
+
+        console.log('Filtered Watchlist (Dashboard/IST):', filteredList);
+        setWatchedAuctions(filteredList);
+        setupSignalR(filteredList);
       } else {
         setWatchedAuctions([]);
+        setupSignalR([]);
       }
     } catch {
       setWatchedAuctions([]);
+      setupSignalR([]);
     } finally {
       setWatchlistLoading(false);
     }
@@ -130,7 +224,7 @@ export default function UserDashboard() {
             count="0"
             desc="Items you are currently selling"
             color="bg-blue-500"
-            href="/my-auctions"
+            href="/auctions"
           />
           <DashboardCard
             title="Active Bids"
@@ -159,8 +253,8 @@ export default function UserDashboard() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-black text-slate-900 text-lg">My Watchlist</h3>
-                <p className="text-slate-400 text-xs font-medium">Auctions you're tracking</p>
+                <h3 className="font-black text-slate-900 text-lg">Live Auctions You're Watching</h3>
+                <p className="text-slate-400 text-xs font-medium">Auctions you're keeping an eye on which is live</p>
               </div>
             </div>
             <Link
@@ -185,7 +279,7 @@ export default function UserDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              <p className="text-slate-400 text-sm font-medium mb-4">Your watchlist is empty. Browse auctions to start watching.</p>
+              <p className="text-slate-400 text-sm font-medium mb-4">Currently Live Auction are not scheduled. Browse auctions to start watching.</p>
               <Link href="/auctions" className="text-amber-500 font-bold text-sm hover:underline">Browse Auctions →</Link>
             </div>
           ) : (
@@ -272,7 +366,7 @@ function DashboardCard({ title, count, desc, color, href }: any) {
       <div className="premium-card p-8 group hover:border-brand-accent/20 transition-all cursor-pointer card-hover">
         <div className={`w-12 h-1 outline outline-4 outline-white rounded-full ${color} mb-6`} />
         <h3 className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-1">{title}</h3>
-        <div className="text-4xl font-extrabold text-slate-900 mb-2">{count}</div>
+        {/* <div className="text-4xl font-extrabold text-slate-900 mb-2">{count}</div> */}
         <p className="text-sm text-slate-500">{desc}</p>
         <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-brand-accent opacity-0 group-hover:opacity-100 transition-opacity">
           View <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>

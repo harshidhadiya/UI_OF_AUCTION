@@ -35,7 +35,7 @@ export default function AdminNavbar() {
             );
           })}
           <button
-            onClick={() => auth.logout()}
+            onClick={() => auth.logoutAdmin()}
             className="text-sm font-medium hover:text-red-400 transition-colors"
           >
             Logout

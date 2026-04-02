@@ -16,25 +16,38 @@ export default function Profile() {
   const router = useRouter();
 
   useEffect(() => {
-    const user = auth.getUser();
-    const token = auth.getToken();
-    if (!user || !token) {
-      router.push('/login');
-      return;
-    }
-    fetchProfile();
+    const init = async () => {
+      let user = auth.getUser();
+
+      // If user is missing (e.g. page refresh), try refreshing
+      if (!user) {
+        // Try user refresh first, fallback to admin refresh
+        const refreshed = await auth.tryRefresh(auth.getIsAdmin());
+        if (!refreshed) {
+          router.push('/login');
+          return;
+        }
+        user = auth.getUser();
+      }
+
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+      fetchProfile();
+    };
+    init();
   }, []);
 
   const fetchProfile = async () => {
     try {
       const user = auth.getUser();
-      const token = auth.getToken();
       let res: ApiResponse;
 
       if (user.role === 'ADMIN') {
-        res = await api.get(`/api/admin/profile/?userid=${user.id}`, token!);
+        res = await api.get(`/api/admin/profile/?userid=${user.id}`);
       } else {
-        res = await api.get(`/api/user/profile/0`, token!);
+        res = await api.get(`/api/user/profile/0`);
       }
 
       if (res.success) {
@@ -65,7 +78,6 @@ export default function Profile() {
 
   const saveAllChanges = async () => {
     setIsSaving(true);
-    const token = auth.getToken();
     try {
       const formData = new FormData();
       // We map the local field names to the PascalCase keys the backend expects
@@ -92,25 +104,15 @@ export default function Profile() {
       }
 
       // Third argument true = use multipart/form-data
-      const res = await api.patch('/api/user/profile', formData, true, token!);
-      if (res.success && res.data) {
-        const data = res.data as any;
-        
-        // Normalize keys for frontend: PascalCase -> camelCase
-        const normalizedData: any = {};
-        Object.keys(data).forEach(key => {
-          const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
-          normalizedData[lowerKey] = data[key];
-        });
-
-        const newProfile = { ...profile, ...normalizedData };
-        setProfile(newProfile);
-        setEditedProfile({ ...editedProfile, ...normalizedData });
-        
-        // Update global auth state to sync across the app (header, etc.)
-        const currentUser = auth.getUser();
-        auth.setUser({ ...currentUser, ...normalizedData });
-        
+      const res = await api.patch('/api/user/profile', formData, true);
+      if (res.success) {
+        // Refresh token and update global user state
+        await auth.tryRefresh(auth.getIsAdmin());
+        const updatedUser = auth.getUser();
+        if (updatedUser) {
+          setProfile(updatedUser);
+          setEditedProfile(updatedUser);
+        }
         setEditingField(null);
       }
     } catch (err) {
@@ -125,28 +127,19 @@ export default function Profile() {
     if (!file) return;
 
     setUploading(true);
-    const token = auth.getToken();
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await api.patch('/api/user/profile', formData, true, token!);
-      if (res.success && res.data) {
-        const data = res.data as any;
-        const normalizedData: any = {};
-        Object.keys(data).forEach(key => {
-          const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
-          normalizedData[lowerKey] = data[key];
-        });
-
-        // res.data might contain the new image URL
-        const newImageUrl = normalizedData.imageUrl || data.imageUrl; // check both
-        setProfile({ ...profile, imageUrl: newImageUrl || profile?.imageUrl });
-        setEditedProfile({ ...editedProfile, imageUrl: newImageUrl || editedProfile?.imageUrl });
-
-        // Update global auth state
-        const currentUser = auth.getUser();
-        auth.setUser({ ...currentUser, imageUrl: newImageUrl });
+      const res = await api.patch('/api/user/profile', formData, true);
+      if (res.success) {
+        // Full refresh and state sync after image upload
+        await auth.tryRefresh(auth.getIsAdmin());
+        const updatedUser = auth.getUser();
+        if (updatedUser) {
+          setProfile(updatedUser);
+          setEditedProfile(updatedUser);
+        }
       }
     } catch (err) {
       console.error(err);
