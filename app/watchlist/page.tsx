@@ -18,7 +18,7 @@ export default function WatchlistPage() {
   // per-auction realtime data: { secondsRemaining, lastBid, status, message, endDate }
   const [auctionRtData, setAuctionRtData] = useState<Record<string, any>>({});
   const joinedRoomsRef = useRef<Set<string>>(new Set());
-  
+
   // Filters and Pagination
   const [nameFilter, setNameFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -247,7 +247,7 @@ export default function WatchlistPage() {
         const data = res.data as any;
         const list = Array.isArray(data) ? data : (data.items || []);
         const total = Array.isArray(data) ? list.length : (data.total || list.length);
-        
+
         if (append) {
           setAuctions(prev => [...prev, ...list]);
         } else {
@@ -278,7 +278,11 @@ export default function WatchlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 page-enter">
+    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden pb-12">
+      {/* Decorative background Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-slate-900/5 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
+
       {/* Toast Notification */}
       {toast && (
         <div className={`fixed top-6 right-6 z-[999] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl font-semibold text-sm animate-slide-down border text-white ${toastColors[toast.type]}`}>
@@ -292,32 +296,37 @@ export default function WatchlistPage() {
 
       <Navbar />
 
-      <main className="max-w-7xl mx-auto p-8">
-        <header className="mb-8">
-          <h2 className="text-4xl font-extrabold text-slate-900 mb-2">My Watchlist</h2>
-          <p className="text-slate-500">Keep track of upcoming and currently live auctions you&apos;re interested in.</p>
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-32 lg:pt-36 relative z-10">
+        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 md:p-10 border border-white shadow-xl shadow-slate-200/50">
+          <div className="relative z-10 w-full max-w-2xl">
+            <span className="inline-block py-1.5 px-3 rounded-xl bg-sky-50 text-sky-600 font-black text-[10px] uppercase tracking-widest mb-4 border border-sky-100">
+              Personal Tracking
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 leading-tight">My Watchlist</h2>
+            <p className="text-slate-500 font-medium text-lg leading-relaxed">Keep track of upcoming and currently live auctions you&apos;re interested in.</p>
+          </div>
         </header>
 
         {/* Filters */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 z-20 relative">
-          <div className="flex flex-wrap gap-4 items-end">
+        <div className="bg-white/90 backdrop-blur-sm p-6 pr-6 rounded-[2rem] shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-end relative z-20">
+          <div className="flex flex-wrap gap-4 items-end w-full">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Product Name</label>
-              <input 
-                type="text" 
-                value={nameFilter} 
-                onChange={e => { setNameFilter(e.target.value); setPage(1); }} 
-                placeholder="Search watched auctions" 
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none transition-all text-sm" 
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Product Name</label>
+              <input
+                type="text"
+                value={nameFilter}
+                onChange={e => { setNameFilter(e.target.value); setPage(1); }}
+                placeholder="Search watched auctions"
+                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm"
               />
             </div>
 
             <div className="flex-1 min-w-[150px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Status</label>
-              <select 
-                value={statusFilter} 
-                onChange={e => { setStatusFilter(e.target.value); setPage(1); }} 
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm text-slate-600"
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Status</label>
+              <select
+                value={statusFilter}
+                onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
+                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm"
               >
                 <option value="">All Statuses</option>
                 <option value="Upcoming">Upcoming</option>
@@ -329,35 +338,35 @@ export default function WatchlistPage() {
             </div>
 
             <div className="flex-1 min-w-[150px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Start Date</label>
-              <input 
-                type="date" 
-                value={startDateFilter} 
-                onChange={e => { setStartDateFilter(e.target.value); setPage(1); }} 
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm" 
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Start Date</label>
+              <input
+                type="date"
+                value={startDateFilter}
+                onChange={e => { setStartDateFilter(e.target.value); setPage(1); }}
+                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm"
               />
             </div>
 
             <div className="flex-1 min-w-[150px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">End Date</label>
-              <input 
-                type="date" 
-                value={endDateFilter} 
-                onChange={e => { setEndDateFilter(e.target.value); setPage(1); }} 
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm" 
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">End Date</label>
+              <input
+                type="date"
+                value={endDateFilter}
+                onChange={e => { setEndDateFilter(e.target.value); setPage(1); }}
+                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm"
               />
             </div>
 
             <div className="flex-none">
-              <button 
+              <button
                 onClick={() => {
                   setNameFilter('');
                   setStatusFilter('');
                   setStartDateFilter('');
                   setEndDateFilter('');
                   setPage(1);
-                }} 
-                className="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm"
+                }}
+                className="px-8 py-3.5 bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-slate-200 transition-colors w-full md:w-auto active:scale-95"
               >
                 Reset
               </button>
@@ -366,24 +375,24 @@ export default function WatchlistPage() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
-            <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 font-medium tracking-wide">Fetching your watchlist...</p>
+          <div className="flex flex-col items-center justify-center py-32 bg-white/50 backdrop-blur-md rounded-[3rem] shadow-sm border border-slate-100/50">
+            <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-6" />
+            <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Fetching your watchlist...</p>
           </div>
         ) : auctions.length === 0 ? (
-          <div className="bg-white rounded-[2.5rem] p-24 text-center shadow-sm border border-slate-100">
-            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8">
-              <svg className="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+          <div className="bg-white/80 backdrop-blur-sm rounded-[3rem] p-24 text-center shadow-sm border border-slate-100 flex flex-col items-center">
+            <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner border border-slate-100">
+              <svg className="w-12 h-12 text-brand-accent/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
             </div>
-            <h3 className="text-2xl font-black text-slate-800 mb-3">Your Watchlist is Empty</h3>
-            <p className="text-slate-500 font-medium max-w-sm mx-auto">Click the Watch button on any upcoming auction to see it here.</p>
-            <button onClick={() => router.push('/auctions')} className="mt-8 px-8 py-3 bg-brand-accent text-white font-bold rounded-xl shadow-lg hover:bg-brand-dark transition-all">
+            <h3 className="text-2xl font-black text-slate-900 tracking-tighter mb-2">Your Watchlist is Empty</h3>
+            <p className="text-slate-500 font-medium text-lg max-w-sm mb-8">Click the Watch button on any upcoming auction to see it here.</p>
+            <button onClick={() => router.push('/auctions')} className="px-10 py-4 bg-brand-accent text-white font-black text-[10px] uppercase tracking-widest rounded-[1.5rem] shadow-xl shadow-brand-accent/20 hover:bg-brand-dark transition-all active:scale-95">
               Browse Auctions
             </button>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {auctions.map((auction: any) => (
                 <WatchedAuctionCard
                   key={auction.id || auction.Id}
@@ -563,20 +572,20 @@ function WatchedAuctionCard({ auction, onViewDetails, onUnwatch, viewerCount, rt
 
   return (
     <div
-      className="premium-card bg-white rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-500 border border-slate-100 flex flex-col h-full relative group"
+      className="bg-white rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 border border-slate-100 flex flex-col h-full relative group active:scale-[0.98]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Eye button – top right on hover */}
-      <div className={`absolute top-4 right-4 z-20 transition-all duration-300 ${isHovered ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-2 pointer-events-none'}`}>
+      <div className={`absolute top-4 right-4 z-20 transition-all duration-300 ${isHovered ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-2 pointer-events-none'}`}>
         <button
           onClick={handleQuickView}
-          className="w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center text-brand-accent hover:bg-brand-accent hover:text-white transition-all"
+          className="w-10 h-10 bg-white/90 backdrop-blur-md border border-white shadow-lg rounded-full flex items-center justify-center text-brand-accent hover:bg-brand-accent hover:text-white hover:border-brand-accent transition-all transform hover:rotate-12"
           title="View Complete Details"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
         </button>
       </div>
@@ -589,7 +598,7 @@ function WatchedAuctionCard({ auction, onViewDetails, onUnwatch, viewerCount, rt
             <div className="flex flex-col min-w-0">
               <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest leading-tight truncate">{ownerInfo.name || ownerInfo.Name}</span>
               {(ownerInfo.phone || ownerInfo.Phone) && (
-                <span className="text-[9px] text-slate-500 font-medium leading-tight flex items-center gap-1">
+                <span className="text-[9px] text-slate-500 font-medium leading-tight flex items-center gap-1 mt-0.5">
                   <svg className="w-2.5 h-2.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                   {ownerInfo.phone || ownerInfo.Phone}
                 </span>
@@ -599,23 +608,23 @@ function WatchedAuctionCard({ auction, onViewDetails, onUnwatch, viewerCount, rt
         </div>
       )}
 
-      <div className="p-6 flex flex-col flex-1">
+      <div className="p-6 pt-7 flex flex-col flex-1">
         <div className="flex justify-between items-start mb-4">
-          <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusStyle}`}>
-            <span className="flex items-center gap-1">
-              {status === 'Live' && <span className="w-1.5 h-1.5 bg-red-600 rounded-full inline-block" />}
+          <div className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusStyle}`}>
+            <span className="flex items-center gap-1.5">
+              {status === 'Live' && <span className="w-2 h-2 bg-red-600 rounded-full inline-block animate-pulse" />}
               {status}
             </span>
           </div>
         </div>
 
-        <h3 className="text-xl font-black text-slate-900 mb-1 line-clamp-1" title={name}>{name}</h3>
+        <h3 className="text-xl font-black text-slate-900 mb-2 line-clamp-1 group-hover:text-brand-accent transition-colors" title={name}>{name}</h3>
         {desc && (
-          <ul className="text-slate-500 text-xs mb-4 space-y-1">
+          <ul className="text-slate-500 text-sm mb-4 space-y-1">
             {desc.split(',').filter((p: string) => p.trim()).slice(0, 3).map((point: string, idx: number) => (
-              <li key={idx} className="flex gap-1.5 items-start">
-                <span className="text-brand-accent font-bold mt-0.5">•</span>
-                <span className="line-clamp-1 leading-relaxed">{point.trim().replace(/^[-*]\s*/, '')}</span>
+              <li key={idx} className="flex gap-2 items-start">
+                <span className="text-brand-accent font-black mt-0.5">•</span>
+                <span className="line-clamp-1 font-medium">{point.trim().replace(/^[-*]\s*/, '')}</span>
               </li>
             ))}
           </ul>
@@ -623,94 +632,100 @@ function WatchedAuctionCard({ auction, onViewDetails, onUnwatch, viewerCount, rt
 
         {/* Latest SignalR Bid Banner */}
         {lastBid && (
-          <div className="mb-3 px-3 py-2 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 text-xs font-bold text-green-700 animate-in fade-in">
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            New bid ₹{lastBid.amount?.toLocaleString()} by {lastBid.maskedBidder}
+          <div className="mb-4 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-[1.25rem] flex items-center gap-2 text-[10px] uppercase tracking-widest font-black text-emerald-600 shadow-inner animate-in fade-in">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            Bid ₹{lastBid.amount?.toLocaleString()} by {lastBid.maskedBidder}
           </div>
         )}
 
-        <div className="space-y-3 mb-5 bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+        <div className="space-y-3 mb-6 bg-slate-50 p-5 rounded-[1.5rem] border border-slate-100 shadow-inner flex-1">
           {status === 'Live' && currentHighestBid > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Curr Bid</span>
-              <span className="font-black text-brand-accent text-lg flex items-baseline gap-1">
-                <span className="text-xs">₹</span>{currentHighestBid.toLocaleString()}
+            <div className="flex justify-between items-end border-b border-slate-200/60 pb-2 mb-2">
+              <span className="text-slate-400 font-black uppercase text-[9px] tracking-[0.15em]">Curr Bid</span>
+              <span className="font-black text-brand-accent text-xl flex items-baseline gap-1">
+                <span className="text-sm">₹</span>{currentHighestBid.toLocaleString()}
               </span>
             </div>
           )}
           {(auction.startingPrice || auction.StartingPrice) > 0 && (
             <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Starting</span>
-              <span className="font-bold text-slate-700">₹{(auction.startingPrice || auction.StartingPrice).toLocaleString()}</span>
+              <span className="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Starting</span>
+              <span className="font-black text-slate-800 tracking-tight">₹{(auction.startingPrice || auction.StartingPrice).toLocaleString()}</span>
             </div>
           )}
           {(auction.reservePrice || auction.ReservePrice) > 0 && (
             <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Reserve</span>
-              <span className="font-bold text-slate-700">₹{(auction.reservePrice || auction.ReservePrice).toLocaleString()}</span>
+              <span className="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Reserve</span>
+              <span className="font-black text-slate-800 tracking-tight">₹{(auction.reservePrice || auction.ReservePrice).toLocaleString()}</span>
             </div>
           )}
           {status === 'Live' && (auction.totalBids || auction.TotalBids) > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Total Bids</span>
-              <span className="font-bold text-slate-700 px-2 py-0.5 bg-slate-200 rounded-md text-xs">{auction.totalBids || auction.TotalBids}</span>
+            <div className="flex justify-between items-center text-sm pt-2 mt-2 border-t border-slate-200/60">
+              <span className="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Total Bids</span>
+              <span className="font-black text-slate-700 px-3 py-1 bg-slate-200/50 rounded-xl text-xs">{auction.totalBids || auction.TotalBids}</span>
             </div>
           )}
         </div>
 
-        <div className="border-t border-slate-100 pt-4 mt-auto space-y-2">
+        <div className="border border-slate-100 p-3 rounded-[1.5rem] mt-auto space-y-2 bg-white">
           {status !== 'UnVerified' && (
             <>
               {status === 'Upcoming' && (
-                <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                  <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  <span className="truncate">Starts: <span className="font-bold text-brand-accent">{getRelativeDateText(auction.startDate || auction.StartDate)}</span> at {new Date(auction.startDate || auction.StartDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <div className="flex items-center gap-2 text-[11px] text-brand-accent font-black tracking-wide">
+                  <div className="w-6 h-6 rounded-full bg-brand-accent/10 flex items-center justify-center shrink-0">
+                    <svg className="w-3.5 h-3.5 text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  </div>
+                  <span className="truncate">Starts <span className="underline decoration-brand-accent/30">{getRelativeDateText(auction.startDate || auction.StartDate)}</span> at {new Date(auction.startDate || auction.StartDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
               )}
               {status === 'Live' && (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {localSeconds > 0 && (
-                    <div className="flex items-center gap-2 text-xs font-black text-red-600 bg-red-50 p-2 rounded-lg border border-red-100">
-                      <svg className="w-4 h-4 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div className="flex items-center gap-2 text-[11px] font-black text-white bg-red-500 p-2.5 rounded-xl shadow-md border border-red-600 tracking-wide justify-center">
+                      <svg className="w-4 h-4 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                       Ends in: {formatTime(localSeconds)}
                     </div>
                   )}
                   {viewerCount !== undefined && (
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 justify-center">
                       <svg className="w-3 h-3 text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
-                      <span><span className="font-black text-brand-accent">{viewerCount}</span> watching live</span>
+                      <span><span className="font-black text-brand-accent">{viewerCount}</span> watching</span>
                     </div>
                   )}
                   {/* Participate Now button for Live auctions */}
                   <button
                     onClick={() => router.push(`/auction/${auction.id || auction.Id}`)}
-                    className="w-full py-2 rounded-xl font-bold text-sm bg-brand-accent text-white hover:bg-brand-dark transition-all flex items-center justify-center gap-2 shadow-sm"
+                    className="w-full py-3.5 rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest bg-brand-accent text-white hover:bg-brand-dark transition-all flex items-center justify-center gap-2 shadow-xl shadow-brand-accent/20 active:scale-95"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                     Participate Now
                   </button>
                 </div>
               )}
               {status === 'Ended' && (
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-xs font-medium text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-200 justify-center">
-                    <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                    Ended on: {new Date(auction.endDate || auction.EndDate).toLocaleString('en-IN')}
+                  <div className="flex items-center gap-2 text-[10px] font-black text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 tracking-wider">
+                    <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                      <svg className="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    Ended: {new Date(auction.endDate || auction.EndDate).toLocaleString('en-IN')}
                   </div>
                   <button
                     onClick={() => router.push(`/auction/${auction.id || auction.Id}`)}
-                    className="w-full py-2 rounded-xl font-bold text-sm bg-slate-800 text-white hover:bg-slate-700 transition-all flex items-center justify-center gap-2 shadow-sm border border-slate-700"
+                    className="w-full py-3 mb-1 rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest bg-slate-900 text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-xl shadow-slate-900/20 active:scale-95"
                   >
                     View Winner
                   </button>
                 </div>
               )}
               {status === 'Cancelled' && (
-                <div className="flex items-center gap-2 text-xs font-medium text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-200">
-                  <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200 tracking-wider">
+                  <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                    <svg className="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </div>
                   Cancelled
                 </div>
               )}
@@ -721,12 +736,12 @@ function WatchedAuctionCard({ auction, onViewDetails, onUnwatch, viewerCount, rt
           <button
             onClick={handleUnwatch}
             disabled={unwatching}
-            className="w-full mt-1 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border bg-red-50 text-red-600 border-red-200 hover:bg-red-600 hover:text-white hover:border-red-600 disabled:opacity-60 disabled:cursor-not-allowed"
+            className={`w-full ${status === 'Live' ? 'mt-2' : 'mt-1'} py-3.5 rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 border bg-red-50 text-red-600 border-red-200 hover:bg-red-600 hover:text-white hover:border-red-600 disabled:opacity-60 disabled:cursor-not-allowed`}
           >
             {unwatching ? (
               <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
             ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
             )}
             {unwatching ? 'Removing...' : 'Unwatch'}
           </button>

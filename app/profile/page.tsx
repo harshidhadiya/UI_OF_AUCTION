@@ -154,115 +154,136 @@ export default function Profile() {
   const isAdmin = user?.role === 'ADMIN';
 
   return (
-    <div className="min-h-screen bg-slate-50 page-enter">
-      {isAdmin ? <AdminNavbar /> : <Navbar />}
-      <div className="p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="premium-card bg-white overflow-hidden">
-          {/* Header/Cover aspect */}
-          <div className="h-32 bg-gradient-to-r from-brand-accent to-brand-dark" />
+    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden pb-12">
+      {/* Decorative background Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-accent/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-slate-900/5 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
 
-          <div className="px-8 pb-8 pt-0 -mt-12 relative">
-            <div className="flex flex-col md:flex-row items-end gap-6 mb-8">
-              <div className="relative group">
+      {isAdmin ? <AdminNavbar /> : <Navbar />}
+      
+      <div className="px-4 md:px-8 pt-32 lg:pt-36 relative z-10 w-full max-w-5xl mx-auto">
+        <div className="bg-white/90 backdrop-blur-md overflow-hidden rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white">
+          {/* Header/Cover aspect */}
+          <div className="h-48 bg-gradient-to-r from-brand-accent to-brand-dark relative overflow-hidden">
+            <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl translate-y-1/2 translate-x-1/4" />
+          </div>
+
+          <div className="px-8 pb-10 pt-0 -mt-16 relative">
+            <div className="flex flex-col md:flex-row items-end gap-6 mb-10">
+              <div className="relative group z-10">
                 <img
                   src={profile?.imageUrl || 'https://via.placeholder.com/150'}
                   alt="Profile"
-                  className="w-32 h-32 rounded-2xl border-4 border-white shadow-lg object-cover bg-white"
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] border-[6px] border-white shadow-xl object-cover bg-white"
                 />
-                <label className="absolute inset-0 flex items-center justify-center bg-black/40 text-white rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white font-black text-xs uppercase tracking-widest rounded-[2rem] opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer backdrop-blur-sm m-1.5">
                   <input type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
-                  {uploading ? '...' : 'Change'}
+                  {uploading ? 'Wait...' : 'Update'}
                 </label>
               </div>
-              <div className="flex-1 pb-2">
-                <h1 className="text-3xl font-bold text-slate-900">{profile?.name}</h1>
-                <p className="text-slate-500 font-medium">{profile?.role}</p>
+              <div className="flex-1 pb-3 flex flex-col items-start md:items-start w-full">
+                <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-2">{profile?.name}</h1>
+                <span className="px-3 py-1 bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-widest rounded-lg border border-slate-200">
+                  {profile?.role}
+                </span>
               </div>
-              <button onClick={() => auth.logout()} className="premium-button bg-red-50 text-red-600 hover:bg-red-100 border border-red-200">
+              <button onClick={() => auth.logout()} className="w-full md:w-auto px-8 py-3.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 hover:border-red-600 rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 mb-1">
                 Log Out
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <EditableField
-                  label="Full Name"
-                  field="name"
-                  value={editedProfile?.name}
-                  isEditing={editingField === 'name'}
-                  onEdit={() => setEditingField('name')}
-                  onChange={(val: string) => handleFieldUpdate('name', val)}
-                  onDone={() => setEditingField(null)}
-                />
-                <EditableField
-                  label="Email Address"
-                  field="email"
-                  value={editedProfile?.email}
-                  isEditing={editingField === 'email'}
-                  onEdit={() => setEditingField('email')}
-                  onChange={(val: string) => handleFieldUpdate('email', val)}
-                  onDone={() => setEditingField(null)}
-                />
+            <div className="bg-slate-50 p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-inner">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                <div className="space-y-8">
+                  <EditableField
+                    label="Full Name"
+                    field="name"
+                    value={editedProfile?.name}
+                    isEditing={editingField === 'name'}
+                    onEdit={() => setEditingField('name')}
+                    onChange={(val: string) => handleFieldUpdate('name', val)}
+                    onDone={() => setEditingField(null)}
+                  />
+                  <EditableField
+                    label="Email Address"
+                    field="email"
+                    value={editedProfile?.email}
+                    isEditing={editingField === 'email'}
+                    onEdit={() => setEditingField('email')}
+                    onChange={(val: string) => handleFieldUpdate('email', val)}
+                    onDone={() => setEditingField(null)}
+                  />
+                </div>
+                <div className="space-y-8">
+                  <EditableField
+                    label="Phone Number"
+                    field="phone"
+                    value={editedProfile?.phone}
+                    isEditing={editingField === 'phone'}
+                    onEdit={() => setEditingField('phone')}
+                    onChange={(val: string) => handleFieldUpdate('phone', val)}
+                    onDone={() => setEditingField(null)}
+                  />
+                  <EditableField
+                    label="Address"
+                    field="address"
+                    value={editedProfile?.address || editedProfile?.Address}
+                    isEditing={editingField === 'address'}
+                    onEdit={() => setEditingField('address')}
+                    onChange={(val: string) => handleFieldUpdate('address', val)}
+                    onDone={() => setEditingField(null)}
+                  />
+                </div>
               </div>
-              <div className="space-y-6">
-                <EditableField
-                  label="Phone Number"
-                  field="phone"
-                  value={editedProfile?.phone}
-                  isEditing={editingField === 'phone'}
-                  onEdit={() => setEditingField('phone')}
-                  onChange={(val: string) => handleFieldUpdate('phone', val)}
-                  onDone={() => setEditingField(null)}
-                />
-                <EditableField
-                  label="Address"
-                  field="address"
-                  value={editedProfile?.address || editedProfile?.Address}
-                  isEditing={editingField === 'address'}
-                  onEdit={() => setEditingField('address')}
-                  onChange={(val: string) => handleFieldUpdate('address', val)}
-                  onDone={() => setEditingField(null)}
-                />
-              </div>
+
+              {isDirty() && (
+                <div className="mt-10 pt-6 border-t border-slate-200/60 flex justify-end">
+                  <button
+                    onClick={saveAllChanges}
+                    disabled={isSaving}
+                    className="px-10 py-4 bg-brand-accent text-white font-black text-[10px] uppercase tracking-widest rounded-[1.5rem] hover:bg-brand-dark transition-all shadow-xl shadow-brand-accent/20 active:scale-95 disabled:opacity-60 disabled:scale-100 flex items-center gap-2"
+                  >
+                    {isSaving ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    )}
+                    {isSaving ? 'Saving Changes...' : 'Save Changes'}
+                  </button>
+                </div>
+              )}
             </div>
 
-            {isDirty() && (
-              <div className="mt-8 flex justify-end">
-                <button
-                  onClick={saveAllChanges}
-                  disabled={isSaving}
-                  className="premium-button bg-brand-accent text-white hover:bg-brand-dark flex items-center gap-2"
-                >
-                  {isSaving ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  )}
-                  {isSaving ? 'Saving Changes...' : 'Save Changes'}
-                </button>
-              </div>
-            )}
-
-            {/* Admin specific detail object if it exists */}
             {profile?.obj && (
-              <div className="mt-12 pt-8 border-t border-slate-100">
-                <h2 className="text-xl font-bold text-slate-800 mb-4">Verification Details</h2>
-                <div className="bg-slate-50 rounded-xl p-6 grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-slate-500">Verified by Admin</span>
-                    <p className="font-semibold">{profile.obj.verifiedByAdmin ? '✅ Yes' : '❌ No'}</p>
+              <div className="mt-8">
+                <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 mx-2">Verification Details</h2>
+                <div className="bg-white border border-slate-100 shadow-sm rounded-[1.5rem] p-6 grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Verified Status</span>
+                    <div className="flex items-center gap-2">
+                      {profile.obj.verifiedByAdmin ? (
+                         <span className="text-emerald-500 font-black text-sm flex items-center gap-1.5"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg> Verified</span>
+                      ) : (
+                         <span className="text-orange-500 font-black text-sm flex items-center gap-1.5"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg> Pending</span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-slate-500">Rights Granted</span>
-                    <p className="font-semibold">{profile.obj.hasRightToAdd ? '✅ Yes' : '❌ No'}</p>
+                  <div className="flex flex-col gap-1 border-l border-slate-100 pl-4">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Added Rights</span>
+                    <div className="flex items-center gap-2">
+                      {profile.obj.hasRightToAdd ? (
+                         <span className="text-emerald-500 font-black text-sm flex items-center gap-1.5"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg> Granted</span>
+                      ) : (
+                         <span className="text-slate-400 font-black text-sm flex items-center gap-1.5"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12"/></svg> None</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
           </div>
         </div>
-      </div>
       </div>
     </div>
   );
@@ -271,12 +292,12 @@ export default function Profile() {
 function EditableField({ label, field, value, isEditing, onEdit, onChange, onDone }: any) {
   return (
     <div className="group">
-      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</label>
+      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">{label}</label>
       {isEditing ? (
         <div className="flex gap-2">
           <input
             autoFocus
-            className="premium-input flex-1"
+            className="flex-1 px-5 py-3.5 bg-white border border-brand-accent/30 rounded-[1.25rem] focus:outline-none focus:ring-4 focus:ring-brand-accent/10 focus:border-brand-accent shadow-sm font-medium text-slate-800 text-sm transition-all"
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={(e) => {
@@ -284,14 +305,16 @@ function EditableField({ label, field, value, isEditing, onEdit, onChange, onDon
               if (e.key === 'Escape') onDone();
             }}
           />
-          <button onClick={onDone} className="p-2 bg-brand-accent text-white rounded-md hover:bg-brand-dark">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <button onClick={onDone} className="px-5 py-3.5 bg-brand-accent text-white rounded-[1.25rem] hover:bg-brand-dark transition-all shadow-md active:scale-95 flex items-center justify-center">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
         </div>
       ) : (
-        <div className="flex items-center justify-between group-hover:bg-slate-100/50 p-2 -mx-2 rounded-lg transition-colors cursor-pointer" onClick={() => onEdit(field, value)}>
-          <span className="text-slate-800 font-medium">{value || 'Not set'}</span>
-          <svg className="w-4 h-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <div className="flex items-center justify-between group-hover:bg-white group-hover:shadow-sm border border-transparent group-hover:border-slate-200 p-4 -mx-4 rounded-[1.25rem] transition-all cursor-pointer" onClick={() => onEdit(field, value)}>
+          <span className="text-slate-700 font-bold text-lg">{value || 'Not set'}</span>
+          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-slate-400 group-hover:text-brand-accent scale-95 group-hover:scale-100">
+             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </div>
         </div>
       )}
     </div>

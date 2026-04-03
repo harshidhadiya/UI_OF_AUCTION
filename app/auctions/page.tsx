@@ -694,7 +694,7 @@ function StandaloneUpdateAuctionModal({ isOpen, auction, onClose, onSuccess, onE
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl my-8 overflow-hidden animate-in fade-in zoom-in duration-300 relative">
         <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div>
@@ -841,7 +841,7 @@ function ProductDetailsModal({ isOpen, product, onClose, currentUser, onLaunchAu
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 pt-28 pb-8 bg-slate-900/40 backdrop-blur-md overflow-y-auto">
       {/* Lightbox Overlay */}
       {fullscreenImage && (
         <div
@@ -1094,7 +1094,7 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl my-8 overflow-hidden animate-in fade-in zoom-in duration-300 relative">
         <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div>
@@ -1205,10 +1205,10 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
     } catch (err: any) { onError(err.message); } finally { setLoading(false); }
   };
 
-  if (fetching) return <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/50">Loading...</div>;
+  if (fetching) return <div className="fixed inset-0 z-[50] flex items-center justify-center px-4 pt-28 pb-8 bg-white/50">Loading...</div>;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm">
       <div className="bg-white rounded-[2rem] w-full max-w-xl p-8 relative">
         <button onClick={onClose} className="absolute top-4 right-4 text-slate-400">✕</button>
         <h3 className="text-2xl font-black mb-6">Update Auction</h3>

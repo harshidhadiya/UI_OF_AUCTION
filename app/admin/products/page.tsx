@@ -133,101 +133,109 @@ export default function AdminProductsDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 page-enter">
+    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden pb-12">
+      {/* Decorative background Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-slate-900/5 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
+
       <AdminNavbar />
 
-      <main className="max-w-7xl mx-auto p-8">
-        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h2 className="text-4xl font-extrabold text-slate-900 mb-2">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-32 lg:pt-36 relative z-10">
+        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 md:p-10 border border-white shadow-xl shadow-slate-200/50">
+          <div className="relative z-10 w-full max-w-2xl">
+            <span className="inline-block py-1.5 px-3 rounded-xl bg-red-50 text-red-600 font-black text-[10px] uppercase tracking-widest mb-4 border border-red-100">
+              Product Review
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 leading-tight">
               {activeTab === 'pending' ? 'Pending Product Verifications' : activeTab === 'mine' ? 'My Verified Products' : 'All Verified Products'}
             </h2>
-            <p className="text-slate-500">
+            <p className="text-slate-500 font-medium text-lg leading-relaxed">
               {activeTab === 'pending'
-                ? 'Review and verify newly submitted items from sellers.'
+                ? 'Review and verify newly submitted items from sellers. Ensure all details are accurate.'
                 : activeTab === 'mine'
-                  ? 'History of products you have personally verified.'
-                  : 'Complete history of all verified products in the system.'}
+                  ? 'History of products you have personally verified and approved.'
+                  : 'Complete history of all verified products circulating in the ecosystem.'}
             </p>
           </div>
 
-          <div className="flex bg-slate-200/50 p-1.5 rounded-2xl border border-slate-200/60 backdrop-blur-sm self-start">
+          <div className="flex bg-slate-100/80 p-1.5 rounded-[1.5rem] border border-slate-200/60 backdrop-blur-sm self-start shadow-inner">
             <button
               onClick={() => { setActiveTab('pending'); handleClear(); }}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'pending' ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${activeTab === 'pending' ? 'bg-white text-red-600 shadow-md shadow-slate-200/50 scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
             >
               Pending
             </button>
             <button
               onClick={() => { setActiveTab('mine'); handleClear(); }}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'mine' ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${activeTab === 'mine' ? 'bg-white text-red-600 shadow-md shadow-slate-200/50 scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
             >
               My Verified
             </button>
             <button
               onClick={() => { setActiveTab('all'); handleClear(); }}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'all' ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${activeTab === 'all' ? 'bg-white text-red-600 shadow-md shadow-slate-200/50 scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
             >
               All Verified
             </button>
           </div>
         </header>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-end">
+        <div className="bg-white/90 backdrop-blur-sm p-6 pr-6 rounded-[2rem] shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-end relative z-20">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Product Name</label>
-            <input type="text" value={searchName} onChange={e => setSearchName(e.target.value)} placeholder="Search by name" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all text-sm" />
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Product Name</label>
+            <input type="text" value={searchName} onChange={e => setSearchName(e.target.value)} placeholder="Search by name" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
           </div>
-          <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
-            <button onClick={handleClear} className="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm w-full md:w-auto">
+          <div className="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
+            <button onClick={handleClear} className="px-6 py-3.5 bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-slate-200 transition-colors w-full md:w-auto active:scale-95">
               Clear
             </button>
-            <button onClick={handleSearch} className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 text-sm w-full md:w-auto">
+            <button onClick={handleSearch} className="px-8 py-3.5 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 w-full md:w-auto active:scale-95">
               Search
             </button>
           </div>
         </div>
 
         {loading && products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
-            <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 font-medium tracking-wide">Syncing product catalogue...</p>
+          <div className="flex flex-col items-center justify-center py-32 bg-white/50 backdrop-blur-md rounded-[3rem] shadow-sm border border-slate-100/50">
+            <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-6" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Syncing product catalogue...</p>
           </div>
         ) : activeTab === 'pending' && is404 ? (
-          <div className="bg-red-500/5 border-2 border-red-500/20 rounded-[2.5rem] p-24 text-center shadow-inner-white overflow-hidden relative group">
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform">
-              <svg className="w-32 h-32 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+          <div className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200/50 rounded-[3rem] p-24 text-center shadow-inner overflow-hidden relative group">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 group-hover:scale-110 transition-all duration-500">
+              <svg className="w-48 h-48 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
             </div>
-            <div className="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-red-500/30">
-              <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <div className="w-24 h-24 bg-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-red-500/30">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
-            <h3 className="text-3xl font-black text-red-600 mb-3 tracking-tight uppercase">Queue Clear</h3>
-            <p className="text-slate-600 font-bold text-lg max-w-sm mx-auto">Zero pending products discovered. Your inbox is clean!</p>
+            <h3 className="text-3xl font-black text-red-600 mb-3 tracking-tighter uppercase relative z-10">Queue Clear</h3>
+            <p className="text-red-700/80 font-medium text-lg max-w-sm mx-auto relative z-10">Zero pending products discovered. The review queue is empty.</p>
           </div>
         ) : products.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((p: any, idx: number) => (
                 <ProductVerificationCard key={p.id || p.productId || idx} product={p} onViewDetail={() => openProductDetails(p)} isHistory={activeTab !== 'pending'} />
               ))}
             </div>
             {hasMore ? (
-              <div ref={observerTarget} className="flex justify-center py-12 mt-8">
-                {loading && <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />}
+              <div ref={observerTarget} className="flex justify-center py-16 mt-4">
+                {loading && <div className="w-8 h-8 border-4 border-slate-200 border-t-red-500 rounded-full animate-spin" />}
               </div>
             ) : (
-              <div className="text-center py-12 mt-8">
-                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">End of records</p>
+              <div className="text-center py-16 mt-4 opacity-50">
+                <span className="w-12 h-1 bg-slate-200 block mx-auto rounded-full mb-4"></span>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">End of records</p>
               </div>
             )}
           </>
         ) : (
-          <div className="bg-white rounded-[2.5rem] p-20 text-center shadow-sm border border-slate-100 flex flex-col items-center">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-[3rem] p-24 text-center shadow-sm border border-slate-100 flex flex-col items-center">
+            <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner border border-slate-100">
               <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">No Verification History</h3>
-            <p className="text-slate-400">There are no verified products to display.</p>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tighter mb-2">No Verification History</h3>
+            <p className="text-slate-500 font-medium text-lg">There are no verified products to display for the current criteria.</p>
           </div>
         )}
 
@@ -255,41 +263,40 @@ export default function AdminProductsDashboard() {
 function ProductVerificationCard({ product, onViewDetail, isHistory }: { product: any, onViewDetail: () => void, isHistory?: boolean }) {
   const isVerified = product.isVerified || product.IsVerified;
 
-  // If unverified: show product description. If verified: show verifyDescription.
   const descriptionStr = isVerified
     ? (product.verifyDescription || product.VerifyDescription || 'No verification description added.')
     : (product.description || product.Description || 'No description provided.');
 
   return (
-    <div className="premium-card bg-white p-6 relative overflow-hidden group hover:scale-[1.02] transition-transform border border-slate-100 flex flex-col h-full">
-      {(isVerified) ? (
-        <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-widest shadow-lg">
-          VERIFIED
-        </div>
-      ) : (product.verifierId || product.VerifierId) ? (
-        <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-widest shadow-lg">
-          UNVERIFIED
-        </div>
-      ) : null}
+    <div className="bg-white rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 border border-slate-100 flex flex-col h-full group active:scale-[0.98]">
+      <div className="p-7 flex-1 flex flex-col relative">
+        {(isVerified) ? (
+          <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[9px] font-black px-4 py-1.5 rounded-bl-[1.5rem] uppercase tracking-widest shadow-lg shadow-emerald-500/20">
+            VERIFIED
+          </div>
+        ) : (product.verifierId || product.VerifierId) ? (
+          <div className="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-black px-4 py-1.5 rounded-bl-[1.5rem] uppercase tracking-widest shadow-lg shadow-red-500/20">
+            UNVERIFIED
+          </div>
+        ) : null}
 
-      <div className="flex-1 space-y-4">
-        <h4 className="font-black text-xl text-slate-900 leading-tight line-clamp-2">{product.productName || product.ProductName || 'Unknown Product'}</h4>
+        <h4 className="font-black text-xl text-slate-900 leading-tight line-clamp-2 mt-4 mb-4 group-hover:text-red-500 transition-colors">{product.productName || product.ProductName || 'Unknown Product'}</h4>
 
-        <div className="text-xs text-slate-500">
-          <ul className="space-y-1 line-clamp-3">
+        <div className="text-sm text-slate-500 flex-1">
+          <ul className="space-y-1.5 line-clamp-3">
             {descriptionStr.split(',').map((point: string, idx: number) => (
-              <li key={idx} className="flex gap-1.5">
-                <span className="text-red-500 font-bold">•</span>
-                <span className="truncate">{point.trim()}</span>
+              <li key={idx} className="flex gap-2 items-start">
+                <span className="text-red-500 font-black mt-0.5">•</span>
+                <span className="truncate font-medium">{point.trim()}</span>
               </li>
             ))}
           </ul>
         </div>
-      </div>
 
-      <button onClick={onViewDetail} className="premium-button w-full mt-6 bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-lg">
-        Review Details
-      </button>
+        <button onClick={onViewDetail} className="w-full py-4 mt-6 bg-slate-900 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-[1.5rem] hover:bg-red-500 transition-all shadow-xl shadow-slate-900/20 active:scale-95 group-hover:shadow-red-500/30">
+          Review Details
+        </button>
+      </div>
     </div>
   );
 }
@@ -390,7 +397,7 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
   const isVerifiedAdmin = authUser?.requestObj?.verifiedByAdmin === true;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[60] flex items-[flex-start] justify-center px-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-300 max-h-[90vh] flex flex-col">
         <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
           <div>
@@ -677,9 +684,9 @@ function ProductVerificationModal({ isOpen, overviewProduct, onClose, onVerify, 
           )}
         </div>
       </div>
-      
+
       {modalImage && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm p-4 animate-in fade-in" onClick={() => setModalImage(null)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm px-4 pt-28 pb-8 animate-in fade-in" onClick={() => setModalImage(null)}>
           <button onClick={() => setModalImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors">
             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>

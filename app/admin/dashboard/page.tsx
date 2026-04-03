@@ -160,7 +160,6 @@ export default function AdminDashboard() {
   const handleAction = async (endpoint: string, successMsg: string) => {
     setIsActionLoading(true);
     try {
-      // endpoints are GET according to the reference and controller
       const res = await api.get(`${endpoint}`);
       if (res.success) {
         showNotification(res.message || successMsg, 'success');
@@ -177,96 +176,107 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 page-enter">
+    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden pb-12">
+      {/* Decorative background Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-slate-900/5 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
+
       <AdminNavbar />
 
-      <main className="max-w-7xl mx-auto p-8">
-        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h2 className="text-4xl font-extrabold text-slate-900 mb-2">
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-32 lg:pt-36 relative z-10">
+
+        {/* Header Section */}
+        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 md:p-10 border border-white shadow-xl shadow-slate-200/50">
+          <div className="relative z-10 w-full max-w-2xl">
+            <span className="inline-block py-1.5 px-3 rounded-xl bg-red-50 text-red-600 font-black text-[10px] uppercase tracking-widest mb-4 border border-red-100">
+              Admin Gateway
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 leading-tight">
               {activeTab === 'pending' ? 'Pending Verifications' : activeTab === 'mine' ? 'My Verified Activity' : 'Verified Archive'}
             </h2>
-            <p className="text-slate-500">
+            <p className="text-slate-500 font-medium text-lg leading-relaxed">
               {activeTab === 'pending'
-                ? 'Review and verify user requests for system access.'
+                ? 'Review and verify new administrator registration requests for core system access.'
                 : activeTab === 'mine'
-                  ? 'History of identity verifications and rights you have granted.'
-                  : 'Complete history of all verified users in the system.'}
+                  ? 'Historical log of identity verifications and rights you have actively granted.'
+                  : 'Complete global directory of all verified administrative users within the system.'}
             </p>
           </div>
 
-          <div className="flex bg-slate-200/50 p-1.5 rounded-2xl border border-slate-200/60 backdrop-blur-sm self-start">
+          <div className="flex bg-slate-100/80 p-1.5 rounded-[1.5rem] border border-slate-200/60 backdrop-blur-sm self-start shadow-inner">
             <button
               onClick={() => { setActiveTab('pending'); handleClear(); }}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'pending' ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${activeTab === 'pending' ? 'bg-white text-red-600 shadow-md shadow-slate-200/50 scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
             >
               Pending
             </button>
             <button
               onClick={() => { setActiveTab('mine'); handleClear(); }}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'mine' ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${activeTab === 'mine' ? 'bg-white text-red-600 shadow-md shadow-slate-200/50 scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
             >
               My Verified
             </button>
             <button
               onClick={() => { setActiveTab('all'); handleClear(); }}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'all' ? 'bg-white text-slate-900 shadow-lg shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${activeTab === 'all' ? 'bg-white text-red-600 shadow-md shadow-slate-200/50 scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
             >
               All Verified
             </button>
           </div>
         </header>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-end">
+        {/* Filter Bar */}
+        <div className="bg-white/90 backdrop-blur-sm p-6 pr-6 rounded-[2rem] shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-end relative z-20">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Name</label>
-            <input type="text" value={searchName} onChange={e => setSearchName(e.target.value)} placeholder="Search by name" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none transition-all text-sm" />
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Name / Identity</label>
+            <input type="text" value={searchName} onChange={e => setSearchName(e.target.value)} placeholder="Search by name" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
           </div>
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Email</label>
-            <input type="text" value={searchEmail} onChange={e => setSearchEmail(e.target.value)} placeholder="Search by email" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none transition-all text-sm" />
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Global Email</label>
+            <input type="text" value={searchEmail} onChange={e => setSearchEmail(e.target.value)} placeholder="Search by email" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
           </div>
           {activeTab !== 'pending' && (
             <>
               <div className="flex-1 min-w-[150px]">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">From Date</label>
-                <input type="date" value={searchFrom} onChange={e => setSearchFrom(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none transition-all text-sm text-slate-600" />
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">From Timeline</label>
+                <input type="date" value={searchFrom} onChange={e => setSearchFrom(e.target.value)} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
               </div>
               <div className="flex-1 min-w-[150px]">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">To Date</label>
-                <input type="date" value={searchTo} onChange={e => setSearchTo(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none transition-all text-sm text-slate-600" />
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">To Timeline</label>
+                <input type="date" value={searchTo} onChange={e => setSearchTo(e.target.value)} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
               </div>
             </>
           )}
-          <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
-            <button onClick={handleClear} className="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm w-full md:w-auto">
-              Clear
+          <div className="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
+            <button onClick={handleClear} className="px-6 py-3.5 bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-slate-200 transition-colors w-full md:w-auto active:scale-95">
+              Clear Filters
             </button>
-            <button onClick={handleSearch} className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 text-sm w-full md:w-auto">
-              Search
+            <button onClick={handleSearch} className="px-8 py-3.5 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 w-full md:w-auto active:scale-95">
+              Execute Search
             </button>
           </div>
         </div>
 
+        {/* Content Area */}
         {loading && requests.length === 0 && verifiedRequests.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
-            <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 font-medium tracking-wide">Syncing with secure vault...</p>
+          <div className="flex flex-col items-center justify-center py-32 bg-white/50 backdrop-blur-md rounded-[3rem] shadow-sm border border-slate-100/50">
+            <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-6 shadow-sm" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Syncing with secure vault...</p>
           </div>
         ) : activeTab === 'pending' ? (
           is404 || requests.length === 0 ? (
-            <div className="bg-yellow-50 border-2 border-yellow-100 rounded-[2.5rem] p-24 text-center shadow-inner-white overflow-hidden relative group">
-              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform">
-                <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+            <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-200/50 rounded-[3rem] p-24 text-center shadow-inner overflow-hidden relative group">
+              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 group-hover:scale-110 transition-all duration-500">
+                <svg className="w-48 h-48" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
               </div>
-              <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-yellow-200">
-                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <div className="w-24 h-24 bg-yellow-400 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-yellow-400/30">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
-              <h3 className="text-3xl font-black text-yellow-800 mb-3 tracking-tight uppercase">Dashboard Clear</h3>
-              <p className="text-yellow-700/80 font-bold text-lg max-w-sm mx-auto">Zero pending verifications discovered. Your inbox is clean!</p>
+              <h3 className="text-3xl font-black text-yellow-800 mb-3 tracking-tighter uppercase relative z-10">Dashboard Clear</h3>
+              <p className="text-yellow-700/80 font-medium text-lg max-w-sm mx-auto relative z-10">Zero pending verifications discovered. The perimeter is secure.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {requests.map((req: any) => (
                 <VerificationCard key={req.id} req={req} onViewDetail={() => fetchUserDetails(req.requestUserId)} />
               ))}
@@ -274,40 +284,51 @@ export default function AdminDashboard() {
           )
         ) : (
           verifiedRequests.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {verifiedRequests.map((req: any) => (
                 <VerificationCard key={req.id} req={req} onViewDetail={() => fetchUserDetails(req.requestUserId || req.id)} isHistory />
               ))}
             </div>
           ) : !loading && (
-            <div className="bg-white rounded-[2.5rem] p-20 text-center shadow-sm border border-slate-100 flex flex-col items-center">
-              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-[3rem] p-24 text-center shadow-sm border border-slate-100 flex flex-col items-center">
+              <div className="w-24 h-24 bg-slate-50 rounded-[2rem] border border-slate-100 flex items-center justify-center mb-6 shadow-inner">
                 <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">No Verification History</h3>
-              <p className="text-slate-400">There are no verified requests to display.</p>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tighter mb-2">No Verification History</h3>
+              <p className="text-slate-500 font-medium text-lg">There are no verified requests to display for the current criteria.</p>
             </div>
           )
         )}
 
+        {/* Load More Trigger */}
         {(requests.length > 0 || verifiedRequests.length > 0) && (
           hasMore ? (
-            <div ref={observerTarget} className="flex justify-center py-12 mt-8">
-              {loading && <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />}
+            <div ref={observerTarget} className="flex justify-center py-16 mt-4">
+              {loading && <div className="w-8 h-8 border-4 border-slate-200 border-t-red-500 rounded-full animate-spin" />}
             </div>
           ) : (
-            <div className="text-center py-12 mt-8">
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">End of records</p>
+            <div className="text-center py-16 mt-4 opacity-50">
+              <span className="w-12 h-1 bg-slate-200 block mx-auto rounded-full mb-4"></span>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">End of securely fetched records</p>
             </div>
           )
         )}
 
+        {/* Global Notifications */}
         {notification && (
-          <div className={`fixed bottom-8 right-8 p-4 rounded-xl shadow-2xl z-50 animate-slide-up ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
-            <p className="font-bold flex items-center gap-2">
-              {notification.type === 'error' ? 'Oops!' : 'Success!'}
-              <span className="font-normal">{notification.msg}</span>
-            </p>
+          <div className={`fixed bottom-8 right-8 p-5 rounded-[1.5rem] shadow-2xl z-50 animate-in slide-in-from-bottom-5 fade-in duration-300 flex items-center min-w-[300px] border ${notification.type === 'error' ? 'bg-white border-red-100 shadow-red-500/20' : 'bg-slate-900 border-slate-800 shadow-slate-900/30'}`}>
+            <div className={`w-10 h-10 rounded-xl mr-4 flex items-center justify-center flex-shrink-0 ${notification.type === 'error' ? 'bg-red-50 text-red-500' : 'bg-emerald-500/20 text-emerald-400'}`}>
+              {notification.type === 'error'
+                ? <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                : <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+              }
+            </div>
+            <div>
+              <p className={`text-[10px] font-black uppercase tracking-widest ${notification.type === 'error' ? 'text-red-500' : 'text-slate-400'}`}>
+                {notification.type === 'error' ? 'System Alert' : 'Operation Success'}
+              </p>
+              <p className={`font-bold mt-0.5 ${notification.type === 'error' ? 'text-slate-900' : 'text-white'}`}>{notification.msg}</p>
+            </div>
           </div>
         )}
 
@@ -315,10 +336,10 @@ export default function AdminDashboard() {
           isOpen={isModalOpen}
           user={selectedUser}
           onClose={() => setIsModalOpen(false)}
-          onVerify={() => handleAction(`/api/admin-request/verify/${selectedUser?.id}`, 'Account verified!')}
-          onGrant={() => handleAction(`/api/admin-request/grant-rights/${selectedUser?.id}`, 'Rights granted!')}
-          onRevokeRights={() => handleAction(`/api/admin-request/revoke-rights/${selectedUser?.id}`, 'Rights revoked!')}
-          onRevokeVerification={() => handleAction(`/api/admin-request/revoke-verification/${selectedUser?.id}`, 'Verification revoked!')}
+          onVerify={() => handleAction(`/api/admin-request/verify/${selectedUser?.id}`, 'Account securely verified.')}
+          onGrant={() => handleAction(`/api/admin-request/grant-rights/${selectedUser?.id}`, 'System posting rights granted.')}
+          onRevokeRights={() => handleAction(`/api/admin-request/revoke-rights/${selectedUser?.id}`, 'System posting rights revoked.')}
+          onRevokeVerification={() => handleAction(`/api/admin-request/revoke-verification/${selectedUser?.id}`, 'Account verification revoked.')}
           loading={isActionLoading}
         />
 
@@ -329,42 +350,50 @@ export default function AdminDashboard() {
 
 function VerificationCard({ req, onViewDetail, isHistory }: { req: any, onViewDetail: () => void, isHistory?: boolean }) {
   return (
-    <div className="premium-card bg-white p-6 relative overflow-hidden group hover:scale-[1.02] transition-transform border border-slate-100">
+    <div className="bg-white p-7 rounded-[2.5rem] relative overflow-hidden group hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 border border-slate-100 flex flex-col h-full active:scale-[0.98]">
       {(req.verifiedByAdmin || isHistory) && (
-        <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-widest shadow-lg">
+        <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[9px] font-black px-4 py-1.5 rounded-bl-[1.5rem] uppercase tracking-widest shadow-lg shadow-emerald-500/20">
           {isHistory ? 'MY VERIFIED' : 'VERIFIED'}
         </div>
       )}
 
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-14 h-14 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center text-slate-400 font-bold text-xl uppercase overflow-hidden">
+      <div className="flex items-center gap-5 mb-6">
+        <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-black text-2xl uppercase overflow-hidden shadow-inner flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
           {req.imageUrl ? <img src={req.imageUrl} className="w-full h-full object-cover" /> : (req.name?.charAt(0) || req.email?.charAt(0))}
         </div>
-        <div>
-          <h4 className="font-bold text-slate-900 leading-tight">{req.name || 'Anonymous User'}</h4>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">{req.role || 'ADMIN'}</p>
+        <div className="min-w-0 pr-4">
+          <h4 className="font-black text-lg text-slate-900 leading-tight truncate">{req.name || 'Anonymous User'}</h4>
+          <p className="text-[10px] font-black text-brand-accent uppercase tracking-widest mt-1">{req.role || 'ADMIN'}</p>
         </div>
       </div>
 
-      <div className="space-y-4 text-sm">
-        <div className="flex justify-between border-b border-slate-50 pb-2">
-          <span className="text-slate-400">Email</span>
-          <span className="text-slate-800 font-medium truncate ml-2">{req.email}</span>
+      <div className="space-y-5 flex-1 flex flex-col justify-end">
+        <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100/50 flex flex-col gap-4">
+          <div>
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Email Identity</span>
+            <span className="text-slate-800 font-bold text-sm truncate block">{req.email}</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-200/50">
+            <div>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Post Rights</span>
+              {req.hasRightToAdd
+                ? <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-xs font-black uppercase tracking-wider border border-emerald-100">Granted</span>
+                : <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-xs font-black uppercase tracking-wider border border-slate-200">Denied</span>
+              }
+            </div>
+            <div>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Verification</span>
+              {req.verifiedByAdmin
+                ? <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-xs font-black uppercase tracking-wider border border-blue-100">Approved</span>
+                : <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-xs font-black uppercase tracking-wider border border-slate-200">Pending</span>
+              }
+            </div>
+          </div>
         </div>
 
-        <div className="pt-2 grid grid-cols-2 gap-3">
-          <div className={`p-2 rounded-lg text-center ${req.hasRightToAdd ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
-            <span className="text-[10px] block font-bold uppercase tracking-tight">Can Post</span>
-            <span className="text-xs font-bold">{req.hasRightToAdd ? 'YES' : 'NO'}</span>
-          </div>
-          <div className={`p-2 rounded-lg text-center ${req.verifiedByAdmin ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
-            <span className="text-[10px] block font-bold uppercase tracking-tight">Verified</span>
-            <span className="text-xs font-bold">{req.verifiedByAdmin ? 'YES' : 'NO'}</span>
-          </div>
-        </div>
-
-        <button onClick={onViewDetail} className="premium-button w-full mt-4 bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-lg">
-          View Full Details
+        <button onClick={onViewDetail} className="w-full py-4 mt-2 bg-slate-900 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-[1.5rem] hover:bg-brand-accent transition-all shadow-xl shadow-slate-900/20 active:scale-95 group-hover:shadow-brand-accent/30">
+          Inspect Profile
         </button>
       </div>
     </div>
@@ -390,7 +419,6 @@ function DetailsModal({ isOpen, user, onClose, onVerify, onGrant, onRevokeRights
   const fetchVerifierDetail = async () => {
     try {
       setVerifierLoading(true);
-      // Using /api/admin-request/detail/{id} as requested
       const res = await api.get(`/api/admin-request/details/${user.verifierId || user.id}`);
       if (res.success && res.data) {
         setVerifierDetail(res.data);
@@ -403,121 +431,147 @@ function DetailsModal({ isOpen, user, onClose, onVerify, onGrant, onRevokeRights
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        <header className="h-24 bg-gradient-to-r from-slate-900 to-slate-800 flex items-end justify-between px-8 pb-4">
-          <h3 className="text-2xl font-bold text-white">Review Request</h3>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg>
+    <div className="fixed inset-0 z-[60] flex items-[flex-start] justify-center px-4 pt-28 pb-8 md:px-6 bg-slate-900/80 backdrop-blur-md overflow-y-auto">
+      <div className="bg-white rounded-[3rem] shadow-2xl shadow-black max-w-2xl w-full border border-slate-700/50 relative overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+
+        {/* Header Art */}
+        <div className="absolute top-0 right-0 w-64 h-32 bg-gradient-to-l from-red-500/10 to-transparent pointer-events-none rounded-tr-[3rem]" />
+
+        <header className="h-28 bg-slate-900 flex items-end justify-between px-10 pb-6 relative z-10">
+          <h3 className="text-2xl font-black text-white tracking-tighter">Security Dossier</h3>
+          <button onClick={onClose} className="w-10 h-10 bg-white/10 hover:bg-white/20 hover:scale-110 active:scale-90 rounded-2xl text-white flex items-center justify-center transition-all backdrop-blur-sm">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </header>
 
-        <div className="p-8">
-          <div className="flex gap-6 mb-8 items-center">
-            <img src={user.imageUrl || 'https://via.placeholder.com/150'} className="w-24 h-24 rounded-2xl object-cover shadow-md" />
-            <div>
-              <h4 className="text-3xl font-extrabold text-slate-900">{user.name}</h4>
-              <p className="text-slate-500 font-medium">{user.email}</p>
-              <div className="mt-2 flex gap-2">
-                <span className="px-3 py-1 bg-slate-100 rounded-full text-xs font-bold text-slate-600 uppercase tracking-widest">{user.role}</span>
-                {user.obj?.verifiedByAdmin && <span className="px-3 py-1 bg-green-100 rounded-full text-xs font-bold text-green-700 uppercase tracking-widest">Verified</span>}
+        <div className="p-10 pt-12">
+          {/* Identity Section */}
+          <div className="flex flex-col sm:flex-row gap-8 mb-10 items-start sm:items-center">
+            <div className="w-28 h-28 bg-slate-50 border-4 border-white shadow-xl rounded-[2rem] flex items-center justify-center text-slate-300 overflow-hidden flex-shrink-0 -mt-16 sm:-mt-20 z-20 relative">
+              {user.imageUrl
+                ? <img src={user.imageUrl} className="w-full h-full object-cover" />
+                : <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              }
+            </div>
+            <div className="flex-1 pt-2 sm:pt-0">
+              <h4 className="text-4xl font-black text-slate-900 tracking-tighter mb-1 leading-none">{user.name}</h4>
+              <p className="text-slate-500 font-bold mb-4">{user.email}</p>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-slate-900 rounded-xl text-[10px] font-black text-white uppercase tracking-widest">{user.role}</span>
+                {user.obj?.verifiedByAdmin && <span className="px-3 py-1 bg-emerald-100 rounded-xl text-[10px] font-black text-emerald-700 uppercase tracking-widest border border-emerald-200">System Verified</span>}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+          {/* Intel Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 bg-slate-50 p-6 rounded-[2rem] border border-slate-100 shadow-inner">
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Phone Number</span>
-              <p className="text-slate-800 font-bold">{user.phone || 'Not Provided'}</p>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Direct Line</span>
+              <p className="text-slate-900 font-bold truncate">{user.phone || 'Classified / Unknown'}</p>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Mailing Address</span>
-              <p className="text-slate-800 font-bold">{user.address || 'Not Provided'}</p>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Registered Base</span>
+              <p className="text-slate-900 font-bold truncate">{user.address || 'Classified / Unknown'}</p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 text-sm text-yellow-700">
-              <p className="font-bold mb-1">Status Report</p>
-              <ul className="list-disc list-inside">
-                <li>Created At: {user.obj?.createdAt ? new Date(user.obj.createdAt).toLocaleString() : 'N/A'}</li>
-                <li>Rights Status: {user.obj?.hasRightToAdd ? 'Enabled' : 'Disabled'}</li>
+          <div className="space-y-6">
+            <div className="bg-white border-2 border-slate-100 p-6 rounded-[2rem]">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Audit Trail</p>
+              <ul className="space-y-3">
+                <li className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                  <span className="text-xs font-bold text-slate-500">Onboarding Timestamp</span>
+                  <span className="text-sm font-black text-slate-800">{user.obj?.createdAt ? new Date(user.obj.createdAt).toLocaleString() : 'N/A'}</span>
+                </li>
+                <li className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                  <span className="text-xs font-bold text-slate-500">Publishing Authority</span>
+                  <span className={`text-[10px] px-3 py-1 rounded-lg font-black uppercase tracking-widest ${user.obj?.hasRightToAdd ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                    {user.obj?.hasRightToAdd ? 'Enabled' : 'Restricted'}
+                  </span>
+                </li>
               </ul>
             </div>
 
             {isSelf ? (
-              <div className="bg-red-50 text-red-600 p-4 rounded-xl font-bold text-center border border-red-100">
-                You cannot verify yourself. Please have another admin review this request.
+              <div className="bg-red-50 text-red-600 p-6 rounded-[2rem] font-bold text-center border-2 border-red-100 flex flex-col items-center gap-2">
+                <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                Identity Conflict: Cannot perform security operations on own account.
               </div>
             ) : !currentAdmin?.requestObj?.hasRightToAdd ? (
-              <div className="bg-red-50 text-red-600 p-4 rounded-xl font-bold text-center border border-red-100 mt-4">
-                You do not have the required "can post/add" permission to manage other administrators.
+              <div className="bg-red-50 text-red-600 p-6 rounded-[2rem] font-bold text-center border-2 border-red-100 flex flex-col items-center gap-2">
+                <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                Clearance Level Insufficient: You lack "Publishing Authority" required to promote or verify other administrators.
               </div>
             ) : (
-              <div className="flex flex-col gap-4 pt-4">
-                <div className="flex gap-4">
+              <div className="flex flex-col gap-4 pt-2">
+                <div className="flex flex-col sm:flex-row gap-4">
                   {!user.obj?.verifiedByAdmin && (
                     <button
                       onClick={onVerify}
                       disabled={loading}
-                      className="flex-1 premium-button bg-brand-accent text-white hover:bg-brand-dark py-4 shadow-xl shadow-brand-accent/20 flex items-center justify-center gap-2"
+                      className="flex-1 bg-brand-accent text-white hover:bg-brand-dark py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-accent/30 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale"
                     >
-                      {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
-                      Verify Identity
+                      {loading ? <div className="w-5 h-5 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : null}
+                      Approve Clearance
                     </button>
                   )}
                   {isVerifier && !user.obj?.hasRightToAdd && (
                     <button
                       onClick={onGrant}
                       disabled={loading}
-                      className="flex-1 premium-button bg-green-600 text-white hover:bg-green-700 py-4 shadow-xl shadow-green-600/20 flex items-center justify-center gap-2"
+                      className="flex-1 bg-slate-900 text-white hover:bg-black py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/30 flex items-center justify-center gap-3 transition-all active:scale-95 disabled:grayscale"
                     >
-                      {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
-                      Grant Rights
+                      {loading ? <div className="w-5 h-5 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : null}
+                      Grant Publishing Rights
                     </button>
                   )}
                 </div>
 
                 {!isVerifier && user.obj?.verifiedByAdmin && (
-                  <div className="pt-4 border-t border-slate-100 flex flex-col gap-4">
-                    <p className="text-sm font-bold text-slate-500">Verified by another admin</p>
+                  <div className="p-6 bg-slate-50 border-2 border-slate-100 rounded-[2rem] flex flex-col gap-4">
+                    <div className="flex justify-between items-center">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Operation locked</p>
+                      <span className="w-2 h-2 bg-slate-300 rounded-full" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-700">Account verified by another administrative entity.</p>
+
                     {!verifierDetail ? (
                       <button
                         onClick={fetchVerifierDetail}
                         disabled={verifierLoading}
-                        className="w-full premium-button bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 py-4 shadow-sm flex items-center justify-center gap-2"
+                        className="w-full bg-white text-slate-900 border-2 border-slate-200 hover:border-slate-400 py-4 rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 flex justify-center items-center gap-3 mt-2"
                       >
-                        {verifierLoading ? <div className="w-5 h-5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" /> : null}
-                        Get Verifier Detail
+                        {verifierLoading ? <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" /> : null}
+                        Request Approver Identity
                       </button>
                     ) : (
-                      <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Verifier Info</span>
-                        <p className="text-blue-900 font-bold text-lg">{verifierDetail.name || verifierDetail.verifierName || 'Unknown'}</p>
-                        <p className="text-blue-700 font-medium text-sm">{verifierDetail.email || verifierDetail.verifierEmail || 'No email'}</p>
+                      <div className="bg-white p-5 rounded-[1.5rem] border border-slate-200 shadow-sm mt-2 flex flex-col gap-1">
+                        <span className="text-[9px] font-black text-brand-accent uppercase tracking-widest block mb-1">Approving Officer Intel</span>
+                        <p className="text-slate-900 font-bold">{verifierDetail.name || verifierDetail.verifierName || 'Identity Classified'}</p>
+                        <p className="text-slate-500 font-medium text-sm">{verifierDetail.email || verifierDetail.verifierEmail || 'No comms channel listed'}</p>
                       </div>
                     )}
                   </div>
                 )}
 
                 {isVerifier && user.obj?.verifiedByAdmin && (
-                  <div className="flex gap-4 pt-4 mt-2 border-t border-slate-100">
+                  <div className="flex flex-col sm:flex-row gap-4 pt-6 mt-4 border-t-2 border-dashed border-slate-200">
                     <button
                       onClick={onRevokeVerification}
                       disabled={loading}
-                      className="flex-1 premium-button bg-red-600 text-white hover:bg-red-700 py-4 shadow-xl shadow-red-600/20 flex items-center justify-center gap-2"
+                      className="flex-1 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100 py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 disabled:grayscale"
                     >
-                      {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
-                      Revoke Verification
+                      {loading ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : null}
+                      Revoke Clearance
                     </button>
                     {user.obj?.hasRightToAdd && (
                       <button
                         onClick={onRevokeRights}
                         disabled={loading}
-                        className="flex-1 premium-button bg-orange-500 text-white hover:bg-orange-600 py-4 shadow-xl shadow-orange-500/20 flex items-center justify-center gap-2"
+                        className="flex-1 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white border border-orange-100 py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 disabled:grayscale"
                       >
-                        {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
-                        Revoke Rights
+                        {loading ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : null}
+                        Revoke Publishing
                       </button>
                     )}
                   </div>

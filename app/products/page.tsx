@@ -471,7 +471,7 @@ function ProductDetailsModal({ isOpen, product, currentUser, onClose, onDeleteSu
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl my-8 overflow-hidden animate-in fade-in zoom-in duration-300 relative flex flex-col md:flex-row min-h-[500px]">
 
         {/* Images Column */}
@@ -696,7 +696,7 @@ function CreateProductModal({ isOpen, onClose, onSuccess, onError }: any) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl my-8 overflow-hidden animate-in fade-in zoom-in duration-300 relative">
         <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div>
@@ -932,7 +932,7 @@ function UpdateProductModal({ isOpen, product, onClose, onSuccess, onError }: an
   const existingImages = (product.images || []).filter((img: any) => !deletedImageIds.includes(img.id));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl my-8 overflow-hidden animate-in fade-in zoom-in duration-300 relative">
         <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div>
@@ -1150,7 +1150,7 @@ function CreateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl my-8 overflow-hidden animate-in fade-in zoom-in duration-300 relative">
         <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div>
@@ -1348,7 +1348,7 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
 
   if (fetching) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm">
         <div className="bg-white p-8 rounded-2xl flex flex-col items-center shadow-2xl animate-in zoom-in">
           <div className="w-10 h-10 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
           <p className="font-bold text-slate-800 tracking-wide">Loading auction details...</p>
@@ -1358,7 +1358,7 @@ function UpdateAuctionModal({ isOpen, product, onClose, onSuccess, onError }: an
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 pt-28 pb-8 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl my-8 overflow-hidden animate-in fade-in zoom-in duration-300 relative">
         <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <div>

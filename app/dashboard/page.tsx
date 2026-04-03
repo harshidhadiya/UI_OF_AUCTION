@@ -183,55 +183,79 @@ export default function UserDashboard() {
 
   if (!user) return null;
 
-
-
   return (
-    <div className="min-h-screen bg-slate-50 page-enter">
+    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden pb-12">
+      {/* Decorative background Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-accent/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
+
       {/* AuctionStarted global notification (from SignalR) */}
       {auctionStartedToast && (
-        <div className="fixed top-6 right-6 z-[999] animate-slide-down">
-          <div className="bg-emerald-600 text-white rounded-2xl shadow-2xl border border-emerald-500 p-5 max-w-xs">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+        <div className="fixed top-24 right-4 md:right-8 z-[999] animate-in fade-in slide-in-from-top-8 duration-500">
+          <div className="bg-emerald-600 text-white rounded-[2rem] shadow-2xl shadow-emerald-500/30 border border-emerald-500 p-5 max-w-sm w-full">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-md shadow-inner">
+                <svg className="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-black text-sm">Auction is LIVE! 🚀</p>
-                <p className="text-emerald-100 text-xs mt-0.5 line-clamp-1">{auctionStartedToast.name}</p>
+              <div className="flex-1 min-w-0 pt-0.5">
+                <p className="font-black text-sm uppercase tracking-widest text-emerald-100 mb-1">Live Now!</p>
+                <p className="text-white font-bold text-lg leading-tight line-clamp-2">{auctionStartedToast.name}</p>
                 <button
                   onClick={() => { router.push(`/auction/${auctionStartedToast.id}`); setAuctionStartedToast(null); }}
-                  className="mt-3 w-full py-2 bg-white text-emerald-700 font-black text-xs rounded-xl hover:bg-emerald-50 transition-all"
+                  className="mt-4 w-full py-2.5 bg-white text-emerald-700 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-emerald-50 hover:shadow-lg transition-all active:scale-95"
                 >
-                  Participate Now →
+                  Join Auction →
                 </button>
               </div>
-              <button onClick={() => setAuctionStartedToast(null)} className="text-white/60 hover:text-white text-sm">✕</button>
+              <button onClick={() => setAuctionStartedToast(null)} className="text-white/50 hover:text-white bg-black/10 hover:bg-black/20 rounded-full w-6 h-6 flex items-center justify-center transition-all mt-1">✕</button>
             </div>
           </div>
         </div>
       )}
+      
       <Navbar />
 
-      <main className="max-w-7xl mx-auto p-8">
-        <div className="bg-gradient-to-r from-brand-accent/10 to-transparent p-12 rounded-[2rem] border border-brand-accent/5 mb-12">
-          <h2 className="text-4xl font-extrabold text-slate-900 mb-4">Welcome back, {user.name}!</h2>
-          <p className="text-lg text-slate-500 max-w-2xl">Start bidding on exclusive items or manage your auctions directly from this dashboard.</p>
+      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-32 lg:pt-36 relative z-10">
+        
+        {/* Hero Section */}
+        <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-10 md:p-14 border border-white shadow-xl shadow-slate-200/50 mb-12 flex flex-col md:flex-row md:items-center justify-between gap-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-brand-accent/5 to-transparent pointer-events-none" />
+          
+          <div className="relative z-10 w-full max-w-2xl">
+            <span className="inline-block py-1.5 px-3 rounded-xl bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-widest mb-4 border border-slate-200/50">
+              User Portal
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 leading-tight">
+              Welcome back, <br/>
+              <span className="text-brand-accent">{user.name}</span>
+            </h2>
+            <p className="text-slate-500 font-medium text-lg leading-relaxed">
+              Start bidding on exclusive items, manage your current sales, or monitor your watchlist directly from here.
+            </p>
+          </div>
+          
+          <div className="hidden lg:flex w-32 h-32 bg-slate-50 rounded-[2rem] border border-slate-100 shadow-inner items-center justify-center relative z-10 transform rotate-3">
+             <span className="text-4xl">👋</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        {/* Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <DashboardCard
             title="My Auctions"
             count="0"
             desc="Items you are currently selling"
-            color="bg-blue-500"
+            color="bg-brand-accent"
             href="/auctions"
+            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />}
           />
           <DashboardCard
             title="Active Bids"
             count="0"
             desc="Auctions you are participating in"
-            color="bg-emerald-500"
+            color="bg-slate-900"
             href="/participations"
+            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />}
           />
           <DashboardCard
             title="Watchlist"
@@ -239,51 +263,55 @@ export default function UserDashboard() {
             desc="Auctions you're keeping an eye on"
             color="bg-amber-500"
             href="/watchlist"
+            icon={<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />}
           />
         </div>
 
-        {/* My Watchlist — inline */}
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mb-8">
-          <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+        {/* Live Watchlist Section */}
+        <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/40 overflow-hidden mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between p-8 border-b border-slate-100/50 bg-slate-50/50">
+            <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0">
+              <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center shadow-inner border border-amber-100/50">
                 <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-black text-slate-900 text-lg">Live Auctions You're Watching</h3>
-                <p className="text-slate-400 text-xs font-medium">Auctions you're keeping an eye on which is live</p>
+                <h3 className="font-black text-slate-900 text-xl tracking-tight">Active Watchlist</h3>
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">Currently Live & Upcoming Soon</p>
               </div>
             </div>
             <Link
               href="/watchlist"
-              className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white font-bold text-sm rounded-xl hover:bg-amber-600 transition-all shadow-md shadow-amber-500/20"
+              className="w-full sm:w-auto text-center px-6 py-3 bg-white border border-slate-200 text-slate-700 font-black text-xs uppercase tracking-widest rounded-xl hover:border-amber-500 hover:text-amber-500 hover:shadow-lg hover:shadow-amber-500/10 transition-all active:scale-95"
             >
-              View All
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              View Full List
             </Link>
           </div>
 
           {watchlistLoading ? (
-            <div className="flex items-center justify-center py-16 gap-3">
-              <div className="w-6 h-6 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
-              <p className="text-slate-400 font-medium text-sm">Loading watchlist…</p>
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <div className="w-10 h-10 border-4 border-slate-100 border-t-amber-500 rounded-full animate-spin" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading Radar...</p>
             </div>
           ) : watchedAuctions.length === 0 ? (
-            <div className="px-8 py-14 text-center">
-              <svg className="w-12 h-12 text-slate-200 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              <p className="text-slate-400 text-sm font-medium mb-4">Currently Live Auction are not scheduled. Browse auctions to start watching.</p>
-              <Link href="/auctions" className="text-amber-500 font-bold text-sm hover:underline">Browse Auctions →</Link>
+            <div className="py-24 text-center px-4">
+              <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-inner border border-slate-100">
+                <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+              <h4 className="text-slate-900 font-black text-lg mb-2">No Active Auctions in Watchlist</h4>
+              <p className="text-slate-500 text-sm font-medium mb-8 max-w-md mx-auto">There are currently no items from your watchlist that are live or starting within the next 2 hours.</p>
+              <Link href="/auctions" className="inline-flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-900/20 active:scale-95 transition-all">
+                Browse Global Catalog 
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </Link>
             </div>
           ) : (
-            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 bg-slate-50/30">
               {watchedAuctions.slice(0, 8).map((auction: any) => {
                 const status = auction.status || auction.Status;
                 const statusStyle = statusColors[status] || 'bg-slate-100 text-slate-700 border-slate-200';
@@ -293,63 +321,68 @@ export default function UserDashboard() {
                 const endDate = auction.endDate || auction.EndDate;
 
                 return (
-                  <div key={auction.id || auction.Id} className="bg-slate-50 rounded-2xl border border-slate-100 p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start">
-                      <div className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusStyle}`}>
-                        <span className="flex items-center gap-1">
-                          {status === 'Live' && <span className="w-1.5 h-1.5 bg-red-600 rounded-full inline-block animate-pulse" />}
+                  <div key={auction.id || auction.Id} className="group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-200/60 hover:-translate-y-1 transition-all duration-300 flex flex-col">
+                    <div className="p-6 pb-4">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className={`px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${statusStyle} flex items-center gap-1.5 shadow-sm`}>
+                          {status === 'Live' && <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse shadow-sm shadow-red-500" />}
                           {status}
-                        </span>
+                        </div>
+                        <button className="text-slate-300 hover:text-red-500 transition-colors">
+                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
+                        </button>
                       </div>
-                    </div>
 
-                    <div>
-                      <h4 className="font-black text-slate-900 text-sm line-clamp-1 mb-1">{name}</h4>
+                      <h4 className="font-black text-slate-900 text-lg leading-tight line-clamp-1 mb-2 group-hover:text-brand-accent transition-colors">{name}</h4>
+                      
                       {desc && (
-                        <ul className="space-y-0.5">
-                          {desc.split(',').filter((p: string) => p.trim()).slice(0, 2).map((point: string, idx: number) => (
-                            <li key={idx} className="flex gap-1.5 items-start text-xs text-slate-500">
-                              <span className="text-amber-500 font-bold mt-0.5">•</span>
-                              <span className="line-clamp-1">{point.trim()}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4">
+                          {desc}
+                        </p>
+                      )}
+
+                      {(auction.startingPrice || auction.StartingPrice) > 0 && (
+                        <div className="bg-slate-50 rounded-[1rem] p-3 flex justify-between items-center border border-slate-100/50 mt-auto">
+                          <span className="text-slate-400 font-bold text-[9px] uppercase tracking-widest">Base Price</span>
+                          <span className="font-black text-brand-accent text-sm">₹{(auction.startingPrice || auction.StartingPrice).toLocaleString()}</span>
+                        </div>
                       )}
                     </div>
-
-                    {(auction.startingPrice || auction.StartingPrice) > 0 && (
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 font-bold uppercase tracking-widest">Starting</span>
-                        <span className="font-bold text-slate-700">₹{(auction.startingPrice || auction.StartingPrice).toLocaleString()}</span>
-                      </div>
-                    )}
-
-                    <div className="text-xs text-slate-500 font-medium mt-auto">
+                    
+                    <div className="bg-slate-900 px-6 py-4 mt-auto">
                       {status === 'Upcoming' && startDate && (
-                        <span className="flex items-center gap-1">
-                          <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                          Starts: <span className="font-bold text-amber-500">{getRelativeDateText(startDate)}</span> at {new Date(startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                        <div className="flex justify-between items-center text-xs text-white/80">
+                          <span className="font-bold">Starts in</span>
+                          <span className="font-black text-amber-400">{getRelativeDateText(startDate)}</span>
+                        </div>
                       )}
                       {status === 'Live' && endDate && (
-                        <span className="flex items-center gap-1 text-red-500 font-bold">
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          Live — ends {new Date(endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                        <div className="flex justify-between items-center text-xs text-white">
+                          <span className="font-bold flex items-center gap-1.5 text-white/80">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> Live Now
+                          </span>
+                          <span className="font-black text-emerald-400">Ends {new Date(endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
                       )}
                       {status === 'Ended' && (
-                        <span className="text-slate-400">Auction ended</span>
+                        <div className="text-xs text-slate-400 font-black uppercase tracking-widest text-center">
+                          Auction Completed
+                        </div>
                       )}
                     </div>
                   </div>
                 );
               })}
+              
               {watchedAuctions.length > 8 && (
                 <Link
                   href="/watchlist"
-                  className="flex items-center justify-center bg-amber-50 border-2 border-dashed border-amber-200 rounded-2xl text-amber-500 font-bold text-sm hover:bg-amber-100 transition-colors min-h-[120px]"
+                  className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center text-slate-400 hover:text-brand-accent hover:border-brand-accent/30 hover:bg-white transition-all min-h-[280px] group"
                 >
-                  +{watchedAuctions.length - 8} more →
+                  <div className="w-12 h-12 rounded-full bg-slate-200 group-hover:bg-brand-light flex items-center justify-center mb-3 transition-colors">
+                    <svg className="w-5 h-5 text-slate-400 group-hover:text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                  </div>
+                  <span className="font-black text-[10px] uppercase tracking-widest">View {watchedAuctions.length - 8} More</span>
                 </Link>
               )}
             </div>
@@ -360,16 +393,30 @@ export default function UserDashboard() {
   );
 }
 
-function DashboardCard({ title, count, desc, color, href }: any) {
+function DashboardCard({ title, count, desc, color, href, icon }: any) {
   return (
-    <Link href={href || '#'} className="block">
-      <div className="premium-card p-8 group hover:border-brand-accent/20 transition-all cursor-pointer card-hover">
-        <div className={`w-12 h-1 outline outline-4 outline-white rounded-full ${color} mb-6`} />
-        <h3 className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-1">{title}</h3>
-        {/* <div className="text-4xl font-extrabold text-slate-900 mb-2">{count}</div> */}
-        <p className="text-sm text-slate-500">{desc}</p>
-        <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-brand-accent opacity-0 group-hover:opacity-100 transition-opacity">
-          View <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+    <Link href={href || '#'} className="block h-full outline-none group">
+      <div className="bg-white/90 backdrop-blur-sm p-8 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/30 hover:shadow-2xl hover:border-slate-200 hover:-translate-y-1 transition-all duration-300 h-full flex flex-col relative overflow-hidden">
+        
+        {/* Color Accent Bar */}
+        <div className={`absolute top-0 left-0 w-full h-1.5 ${color} opacity-80 group-hover:opacity-100 transition-opacity`} />
+        
+        <div className="flex justify-between items-start mb-6">
+          <div className={`w-12 h-12 rounded-[1.25rem] flex items-center justify-center shadow-inner ${color} shadow-lg shadow-black/10 text-white transform group-hover:scale-110 transition-transform`}>
+             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">{icon}</svg>
+          </div>
+          <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-brand-light group-hover:text-brand-accent transition-colors">
+            <svg className="w-4 h-4 transform -rotate-45 group-hover:rotate-0 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+          </div>
+        </div>
+        
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</h3>
+        <p className="text-slate-600 text-sm font-medium mt-1 mb-6 pr-4 leading-relaxed flex-1">{desc}</p>
+        
+        <div className="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
+           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Items</span>
+           {/* If we had a count to show we could show it here, but keeping logic consistent */}
+           <span className="text-xl font-black text-slate-900">{count}</span>
         </div>
       </div>
     </Link>

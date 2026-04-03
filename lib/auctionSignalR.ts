@@ -79,15 +79,30 @@ async function buildAndConnect(): Promise<signalR.HubConnection | null> {
  * Browser cookies are automatically sent with withCredentials: true (standard behavior).
  */
 function createConnection(): signalR.HubConnection {
-  return new signalR.HubConnectionBuilder()
+  const conn = new signalR.HubConnectionBuilder()
     .withUrl(SIGNALR_HUB_URL, {
       skipNegotiation: true,
       transport: signalR.HttpTransportType.WebSockets,
-      // SignalR sends credentials by default if on same origin or specified
     })
     .withAutomaticReconnect([0, 2000, 5000, 10000])
     .configureLogging(signalR.LogLevel.Warning)
     .build();
+
+  conn.onreconnected(async (connectionId) => {
+    console.log(`[SignalR] 🔄 Reconnected with new ID: ${connectionId}. Restoring rooms...`);
+    for (const [auctionId, count] of roomRefCounts.entries()) {
+      if (count > 0) {
+        try {
+          await conn.invoke('JoinAuction', auctionId);
+          console.log(`[SignalR] 🔄 Restored JoinAuction for ${auctionId}`);
+        } catch (e) {
+          console.error(`[SignalR] ❌ Failed to restore JoinAuction for ${auctionId}`, e);
+        }
+      }
+    }
+  });
+
+  return conn;
 }
 
 /** Cleanly stop and dispose the connection. */
@@ -120,6 +135,7 @@ export async function joinAuctionRoomSafe(conn: signalR.HubConnection, auctionId
   roomRefCounts.set(auctionId, currentCount + 1);
   if (currentCount === 0) {
     try {
+      await conn.invoke('ListenToAuction', auctionId);
       await conn.invoke('JoinAuction', auctionId);
       console.log(`[SignalR] ✅ Globally joined room auction_${auctionId} (Active Viewer)`);
     } catch (err) {
