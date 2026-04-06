@@ -99,8 +99,8 @@ export const auth = {
         console.log('[Auth] Refresh successful, fetching profile...');
 
         // Fetch user profile (Backend reads identity from cookie automatically)
-        const profileRes = await api.get<any>('/api/user/profile/0');
-        
+        const profileRes = await api.get<any>('/api/user/profile');
+
         const d = profileRes?.data ?? profileRes;
         if (d && (d.id || d.Id || d.email || d.Email)) {
           _user = {
@@ -197,7 +197,7 @@ export const auth = {
         if (ok) return true;
         return auth.refreshUser();
       }
-      
+
       const ok = await auth.refreshUser();
       if (ok) return true;
       return auth.refreshAdmin();

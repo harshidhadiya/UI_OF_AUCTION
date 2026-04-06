@@ -213,10 +213,10 @@ export default function ParticipationsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden pb-12">
+    <div className="min-h-screen bg-brand-light relative overflow-x-hidden pb-12">
       {/* Decorative background Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-slate-900/5 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
+      <div className="yellow-blob" />
+      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-brand-accent/10 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
 
       {/* Toast */}
       {toast && (
@@ -228,68 +228,69 @@ export default function ParticipationsPage() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 md:px-8 pt-32 lg:pt-36 relative z-10">
-        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 md:p-10 border border-white shadow-xl shadow-slate-200/50">
-          <div className="relative z-10 w-full max-w-2xl">
-            <span className="inline-block py-1.5 px-3 rounded-xl bg-orange-50 text-orange-600 font-black text-[10px] uppercase tracking-widest mb-4 border border-orange-100">
-              Activity History
-            </span>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 leading-tight">My Participations</h2>
-            <p className="text-slate-500 font-medium text-lg leading-relaxed">Manage auctions you have placed bids on.</p>
+        <header className="mb-10 flex flex-col gap-1">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <span className="w-2 h-2 bg-[#FFD000] rounded-full" />
+            <span className="text-[10px] font-black text-[#6B6557] uppercase tracking-widest">Activity History</span>
           </div>
+          <h2 className="display-heading text-[#111]" style={{ fontSize: 'clamp(2.6rem,5vw,5rem)' }}>
+            PARTICIPATIONS.
+          </h2>
+          <p className="text-[#6B6557] font-medium mt-2 max-w-lg">Manage and track auctions you have placed bids on.</p>
         </header>
 
         {/* Filters Panel */}
-        <div className="bg-white/90 backdrop-blur-sm p-6 pr-6 rounded-[2rem] shadow-sm border border-slate-100 mb-10 overflow-visible relative z-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Search</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Product name..." className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
+        <div className="bg-white border border-[#E5DFD3] rounded-2xl p-5 mb-8 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">  
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Search</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Product name..." className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] focus:ring-4 focus:ring-[#FFD000]/10 outline-none transition-all text-sm text-[#111] font-medium" />
             </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Status</label>
-              <select value={status} onChange={e => setStatus(e.target.value)} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm">
+            <div className="flex-1 min-w-[140px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Status</label>
+              <select value={status} onChange={e => setStatus(e.target.value)} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium">
                 <option value="">All Statuses</option>
                 <option value="Upcoming">Upcoming</option>
                 <option value="Live">Live</option>
                 <option value="Ended">Ended</option>
               </select>
             </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Price Range (₹)</label>
-              <div className="flex gap-2">
-                <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="Min" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-medium focus:bg-white outline-none" />
-                <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Max" className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-sm font-medium focus:bg-white outline-none" />
+            <div className="flex-1 flex gap-3 min-w-[280px]">
+              <div className="flex-1">
+                <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Min Price</label>
+                <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="Min ₹" className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Max Price</label>
+                <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Max ₹" className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
               </div>
             </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Date Range</label>
-              <div className="flex gap-2">
-                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-3 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-[11px] font-bold text-slate-500 focus:bg-white outline-none" title="Start Date" />
-                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full px-3 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] text-[11px] font-bold text-slate-500 focus:bg-white outline-none" title="End Date" />
+            <div className="flex-1 flex gap-3 min-w-[280px]">
+              <div className="flex-1">
+                <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Start Date</label>
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">End Date</label>
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
               </div>
             </div>
-            <div className="flex items-center h-[52px]">
-              <button
-                onClick={() => { setWinOnly(!winOnly); if (page !== 1) setPage(1); setSearchTrigger(p => !p); }}
-                className={`w-full h-full flex items-center justify-center gap-2 rounded-[1.25rem] border-2 transition-all font-black px-4 text-[11px] uppercase tracking-wider active:scale-95 ${winOnly ? 'bg-amber-50 border-amber-200 text-amber-600 shadow-inner' : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-brand-accent/30 hover:text-slate-500'}`}
-              >
-                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${winOnly ? 'bg-amber-500 border-amber-500' : 'bg-white border-slate-300'}`}>
-                  {winOnly && (
-                    <svg className="w-3h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-                <span>Won Only</span>
-              </button>
+
+            <div className="flex flex-col justify-end shrink-0">
+              <span className="block text-[10px] text-transparent mb-1.5" aria-hidden="true">&nbsp;</span>
+              <div className="flex items-center gap-2.5 h-[48px] px-1">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={winOnly} onChange={e => { setWinOnly(e.target.checked); if (page !== 1) setPage(1); setSearchTrigger(p => !p); }} />
+                  <div className="w-10 h-5 bg-[#E5DFD3] rounded-full peer peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#FFD000]"></div>
+                </label>
+                <span className="text-[10px] font-black text-[#6B6557] uppercase tracking-widest whitespace-nowrap">Won Only</span>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-end gap-3 mt-6">
-            <button onClick={handleClear} className="px-8 py-3.5 bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-slate-200 transition-colors w-full md:w-auto active:scale-95">Clear</button>
-            <button onClick={handleSearch} className="px-8 py-3.5 bg-brand-accent text-white font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-brand-dark transition-all shadow-xl shadow-brand-accent/20 w-full md:w-auto active:scale-95 flex items-center justify-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              Apply Filters
-            </button>
+
+            <div className="flex gap-2 shrink-0">
+              <button onClick={handleClear} className="px-5 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] text-[#6B6557] font-black text-xs uppercase tracking-widest rounded-xl hover:border-[#111] hover:text-[#111] transition-all">Clear</button>
+              <button onClick={handleSearch} className="cta-button px-6 py-3 h-auto text-xs">Search</button>
+            </div>
           </div>
         </div>
 
@@ -360,7 +361,7 @@ function ParticipationCard({ auction, viewerCount, rtData, onViewDetails, win }:
 
   const statusColors: any = {
     'Upcoming': 'bg-blue-100 text-blue-700 border-blue-200',
-    'Live': 'bg-red-100 text-red-700 border-red-200 animate-pulse',
+    'Live': 'bg-red-100 text-red-700 border-red-200',
     'Ended': 'bg-slate-100 text-slate-700 border-slate-200',
     'Cancelled': 'bg-gray-100 text-gray-700 border-gray-200',
     'UnVerified': 'bg-orange-100 text-orange-700 border-orange-200'
@@ -437,7 +438,7 @@ function ParticipationCard({ auction, viewerCount, rtData, onViewDetails, win }:
         {isLive && (
           <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center pointer-events-none">
             <div className="bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <div className="w-2 h-2 bg-red-500 rounded-full" />
               <span className="text-[10px] font-black text-white uppercase tracking-wider">{viewerCount || 0} watching</span>
             </div>
           </div>
@@ -460,7 +461,7 @@ function ParticipationCard({ auction, viewerCount, rtData, onViewDetails, win }:
         <div className="flex justify-between items-start mb-4">
           <div className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusStyle}`}>
             <span className="flex items-center gap-1.5">
-              {status === 'Live' && <span className="w-2 h-2 bg-red-600 rounded-full inline-block animate-pulse" />}
+              {status === 'Live' && <span className="w-2 h-2 bg-red-600 rounded-full inline-block" />}
               {status}
             </span>
           </div>
@@ -620,7 +621,7 @@ function ProductDetailsModal({ isOpen, product, onClose, currentUser }: any) {
     }
     setLoadingOwner(true);
     try {
-      const res = await api.get(`/api/user/profile/${userId}`);
+      const res = await api.get(`/api/user/profile?id=${userId}`);
       if (res.success) {
         setOwnerInfo(res.data);
         setShowOwner(true);

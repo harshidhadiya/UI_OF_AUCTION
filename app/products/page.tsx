@@ -148,23 +148,24 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 page-enter">
+    <div className="min-h-screen bg-[#FAF7F0] page-enter relative overflow-hidden">
+      <div className="yellow-blob" />
       <Navbar />
 
-      <main className="max-w-7xl mx-auto p-8">
-        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 pt-24 pb-16">
+        <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-5">
           <div>
-            <h2 className="text-4xl font-extrabold text-slate-900 mb-2">
-              Product Hub
-            </h2>
-            <p className="text-slate-500">
-              Discover and manage premium auction items.
-            </p>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2 h-2 bg-[#FFD000] rounded-full" />
+              <span className="text-[10px] font-black text-[#6B6557] uppercase tracking-widest">My Catalogue</span>
+            </div>
+            <h2 className="display-heading text-[#111]" style={{ fontSize: 'clamp(2.4rem,4.5vw,4.5rem)' }}>PRODUCT HUB.</h2>
+            <p className="text-[#6B6557] font-medium mt-2">Discover and manage your premium auction items.</p>
           </div>
 
           <div className="flex gap-4 flex-col sm:flex-row">
             {(currentUser?.role === 'SELLER' || currentUser?.role === 'USER') && (
-              <button onClick={() => setIsModalOpen(true)} className="premium-button bg-brand-accent text-white shadow-brand-accent/20">
+              <button onClick={() => setIsModalOpen(true)} className="cta-button px-8 text-sm h-12">
                 + Add Product
               </button>
             )}
@@ -172,76 +173,68 @@ export default function ProductsPage() {
         </header>
 
         {/* Filters */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
-          <div className="flex flex-wrap gap-4 items-end">
+        <div className="bg-white border border-[#E5DFD3] rounded-2xl p-5 mb-8 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+          <div className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Name</label>
-              <input type="text" value={searchName} onChange={e => setSearchName(e.target.value)} placeholder="Search product name" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none transition-all text-sm" />
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Name</label>
+              <input type="text" value={searchName} onChange={e => setSearchName(e.target.value)} placeholder="Search product name" className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] focus:ring-4 focus:ring-[#FFD000]/10 outline-none transition-all text-sm text-[#111] font-medium" />
             </div>
 
-            <div className="flex-none min-w-[120px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Verified Only</label>
-              <div className="flex items-center h-[46px]">
+            <div className="flex flex-col justify-end shrink-0">
+              <span className="block text-[10px] text-transparent mb-1.5" aria-hidden="true">&nbsp;</span>
+              <div className="flex items-center gap-2.5 h-[48px] px-1">
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" checked={verifiedFilter} onChange={e => {
-                    setVerifiedFilter(e.target.checked);
-                    setPage(1);
-                  }} />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-accent"></div>
+                  <input type="checkbox" className="sr-only peer" checked={verifiedFilter} onChange={e => { setVerifiedFilter(e.target.checked); setPage(1); }} />
+                  <div className="w-10 h-5 bg-[#E5DFD3] rounded-full peer peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#FFD000]"></div>
                 </label>
+                <span className="text-[10px] font-black text-[#6B6557] uppercase tracking-widest whitespace-nowrap">Verified Only</span>
               </div>
             </div>
 
-            <div className="flex-1 min-w-[150px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Buy Date From</label>
-              <input type="date" value={buyFrom} onChange={e => setBuyFrom(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm text-slate-600" />
+            <div className="flex-1 min-w-[140px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Buy Date From</label>
+              <input type="date" value={buyFrom} onChange={e => setBuyFrom(e.target.value)} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
             </div>
-            <div className="flex-1 min-w-[150px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Buy Date To</label>
-              <input type="date" value={buyTo} onChange={e => setBuyTo(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm text-slate-600" />
+            <div className="flex-1 min-w-[140px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Buy Date To</label>
+              <input type="date" value={buyTo} onChange={e => setBuyTo(e.target.value)} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
             </div>
 
             {activeTab === 'mine' && (
               <>
-                <div className="flex-1 min-w-[150px]">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Created From</label>
-                  <input type="date" value={createdFrom} onChange={e => setCreatedFrom(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm text-slate-600" />
+                <div className="flex-1 min-w-[140px]">
+                  <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Created From</label>
+                  <input type="date" value={createdFrom} onChange={e => setCreatedFrom(e.target.value)} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
                 </div>
-                <div className="flex-1 min-w-[150px]">
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Created To</label>
-                  <input type="date" value={createdTo} onChange={e => setCreatedTo(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm text-slate-600" />
+                <div className="flex-1 min-w-[140px]">
+                  <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Created To</label>
+                  <input type="date" value={createdTo} onChange={e => setCreatedTo(e.target.value)} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
                 </div>
               </>
             )}
 
-            <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
-              <button onClick={handleClear} className="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm w-full md:w-auto">
-                Clear
-              </button>
-              <button onClick={handleSearch} className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 text-sm w-full md:w-auto">
-                Search
-              </button>
+            <div className="flex gap-2">
+              <button onClick={handleClear} className="px-5 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] text-[#6B6557] font-black text-xs uppercase tracking-widest rounded-xl hover:border-[#111] hover:text-[#111] transition-all">Clear</button>
+              <button onClick={handleSearch} className="cta-button px-6 py-3 h-auto text-xs">Search</button>
             </div>
           </div>
         </div>
 
         {/* Product Grid */}
         {loading && products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
-            <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 font-medium tracking-wide">Fetching your items...</p>
+          <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-[#E5DFD3]">
+            <div className="w-12 h-12 border-4 border-[#E5DFD3] border-t-[#FFD000] rounded-full animate-spin mb-4" />
+            <p className="text-[#B8B0A0] font-black text-[10px] uppercase tracking-widest">Fetching Products...</p>
           </div>
         ) : is404 || products.length === 0 ? (
-          <div className="bg-white rounded-[2.5rem] p-24 text-center shadow-sm border border-slate-100">
-            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8">
-              <svg className="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
-            </div>
-            <h3 className="text-2xl font-black text-slate-800 mb-3">No Products Found</h3>
-            <p className="text-slate-500 font-medium max-w-sm mx-auto">Try adjusting your filters or search terms.</p>
+          <div className="bg-white rounded-3xl p-20 text-center border border-[#E5DFD3]">
+            <div className="text-6xl mb-6">📦</div>
+            <h3 className="text-2xl font-black text-[#111] mb-3">No Products Found</h3>
+            <p className="text-[#6B6557] font-medium max-w-sm mx-auto">Try adjusting your filters or search terms.</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((p: any) => (
                 <ProductCard key={p.id || p.Id} product={p} currentUser={currentUser} onViewDetail={() => setSelectedProduct(p)} />
               ))}
@@ -323,11 +316,13 @@ export default function ProductsPage() {
         />
 
         {notification && (
-          <div className={`fixed bottom-8 right-8 p-4 rounded-xl shadow-2xl z-50 animate-bounce ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
-            <p className="font-bold flex items-center gap-2">
-              {notification.type === 'error' ? 'Oops!' : 'Success!'}
-              <span className="font-normal">{notification.msg}</span>
-            </p>
+          <div className={`fixed bottom-8 right-8 px-5 py-4 rounded-2xl shadow-2xl z-50 animate-slide-left flex items-center gap-3 max-w-sm text-sm font-bold border ${
+            notification.type === 'error'
+              ? 'bg-red-50 text-red-700 border-red-200'
+              : 'bg-[#FAF7F0] text-[#111] border-[#FFD000]'
+          }`}>
+            <span>{notification.type === 'error' ? '❌' : '✅'}</span>
+            <span>{notification.msg}</span>
           </div>
         )}
       </main>
@@ -341,7 +336,7 @@ function ProductCard({ product, currentUser, onViewDetail }: { product: any, cur
   const mainImage = product.images && product.images.length > 0 ? product.images[0].imageUrl : 'https://via.placeholder.com/300?text=No+Image';
 
   return (
-    <div onClick={onViewDetail} className="premium-card bg-white rounded-3xl overflow-hidden hover:scale-[1.02] transition-transform duration-300 border border-slate-100 flex flex-col h-full group cursor-pointer">
+    <div onClick={onViewDetail} className="bg-white rounded-2xl overflow-hidden border border-[#E5DFD3] flex flex-col h-full group cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
       <div className="relative h-48 bg-slate-100 overflow-hidden">
         <img src={mainImage} alt={product.name || product.Name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
         <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -353,12 +348,12 @@ function ProductCard({ product, currentUser, onViewDetail }: { product: any, cur
           )}
         </div>
       </div>
-      <div className="p-6 flex flex-col flex-1">
-        <h3 className="text-xl font-black text-slate-900 mb-2 truncate">{product.name || product.Name}</h3>
-        <ul className="text-slate-500 text-sm mb-4 flex-1 space-y-1">
+      <div className="p-5 flex flex-col flex-1">
+        <h3 className="text-lg font-black text-[#111] mb-2 truncate group-hover:text-[#B8960C] transition-colors">{product.name || product.Name}</h3>
+        <ul className="text-[#6B6557] text-sm mb-4 flex-1 space-y-1">
           {((product.description || product.Description) || '').split(',').filter((p: string) => p.trim()).map((point: string, idx: number) => (
             <li key={idx} className="flex gap-1.5 items-start">
-              <span className="text-brand-accent font-bold mt-0.5">•</span>
+              <span className="text-[#FFD000] font-bold mt-0.5">•</span>
               <span className="line-clamp-1">{point.trim().replace(/^[-*]\s*/, '')}</span>
             </li>
           ))}
@@ -442,7 +437,7 @@ function ProductDetailsModal({ isOpen, product, currentUser, onClose, onDeleteSu
   const fetchOwnerDetail = async () => {
     setLoadingOwner(true);
     try {
-      const res = await api.get(`/api/User/profile/${product.user_id || product.userId}`);
+      const res = await api.get(`/api/User/profile?id=${product.user_id || product.userId}`);
       if (res.success && res.data) {
         setOwnerDetail(res.data);
       }

@@ -166,32 +166,33 @@ function AuctionsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 page-enter">
+    <div className="min-h-screen bg-[#FAF7F0] page-enter relative overflow-hidden">
+      <div className="yellow-blob" />
       <Navbar />
 
-      <main className="max-w-7xl mx-auto p-8">
-        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h2 className="text-4xl font-extrabold text-slate-900 mb-2">
-              Auction Arena
-            </h2>
-            <p className="text-slate-500">
-              Discover, track, and participate in exclusive live auctions.
-            </p>
+      <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 pt-24 pb-16">
+        {/* HERO HEADER */}
+        <header className="mb-10 flex flex-col gap-1">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <span className="w-2 h-2 bg-[#FFD000] rounded-full" />
+            <span className="text-[10px] font-black text-[#6B6557] uppercase tracking-widest">Live Platform</span>
           </div>
+          <h2 className="display-heading text-[#111]" style={{ fontSize: 'clamp(2.6rem,5vw,5rem)' }}>
+            AUCTION ARENA.
+          </h2>
+          <p className="text-[#6B6557] font-medium mt-2 max-w-lg">Discover, track, and participate in exclusive live auctions around the world.</p>
         </header>
 
-        {/* Filters */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8 z-20 relative">
-          <div className="flex flex-wrap gap-4 items-end">
+        {/* FILTER BAR */}
+        <div className="bg-white border border-[#E5DFD3] rounded-2xl p-5 mb-8 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">  
+          <div className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Product Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Search auctions" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none transition-all text-sm" />
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Search</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Product name..." className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] focus:ring-4 focus:ring-[#FFD000]/10 outline-none transition-all text-sm text-[#111] font-medium" />
             </div>
-
-            <div className="flex-1 min-w-[150px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Status</label>
-              <select value={status} onChange={e => setStatus(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm text-slate-600">
+            <div className="flex-1 min-w-[140px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Status</label>
+              <select value={status} onChange={e => setStatus(e.target.value)} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium">
                 <option value="">All Statuses</option>
                 <option value="Upcoming">Upcoming</option>
                 <option value="Live">Live</option>
@@ -201,36 +202,30 @@ function AuctionsContent() {
                 <option value="Verified">Verified</option>
               </select>
             </div>
-
-            <div className="flex-[0.5] min-w-[120px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Min Price (₹)</label>
-              <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="0.00" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm" />
+            <div className="min-w-[110px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Min ₹</label>
+              <input type="number" value={minPrice} onChange={e => setMinPrice(e.target.value)} placeholder="0" className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
             </div>
-
-            <div className="flex-[0.5] min-w-[120px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Max Price (₹)</label>
-              <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="0.00" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-accent outline-none text-sm" />
+            <div className="min-w-[110px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Max ₹</label>
+              <input type="number" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Any" className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
             </div>
-
-            <div className="flex-none min-w-[120px]">
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">My Auctions</label>
-              <div className="flex items-center h-[46px]">
+            <div className="flex flex-col justify-end shrink-0">
+              <span className="block text-[10px] text-transparent mb-1.5" aria-hidden="true">&nbsp;</span>
+              <div className="flex items-center gap-2.5 h-[48px] px-1">
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" checked={mine} onChange={e => {
-                    setMine(e.target.checked);
-                    setPage(1);
-                  }} />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-accent"></div>
+                  <input type="checkbox" className="sr-only peer" checked={mine} onChange={e => { setMine(e.target.checked); if (page !== 1) setPage(1); setSearchTrigger(p => !p); }} />
+                  <div className="w-10 h-5 bg-[#E5DFD3] rounded-full peer peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#FFD000]"></div>
                 </label>
+                <span className="text-[10px] font-black text-[#6B6557] uppercase tracking-widest whitespace-nowrap">My Auctions</span>
               </div>
             </div>
-
-            <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
-              <button onClick={handleClear} className="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm w-full md:w-auto">
+            <div className="flex gap-2">
+              <button onClick={handleClear} className="px-5 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] text-[#6B6557] font-black text-xs uppercase tracking-widest rounded-xl hover:border-[#111] hover:text-[#111] transition-all">
                 Clear
               </button>
-              <button onClick={handleSearch} className="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 text-sm w-full md:w-auto flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <button onClick={handleSearch} className="cta-button px-6 py-3 h-auto text-xs">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 Filter
               </button>
             </div>
@@ -239,21 +234,19 @@ function AuctionsContent() {
 
         {/* Auction Grid */}
         {loading && auctions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
-            <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 font-medium tracking-wide">Fetching auctions...</p>
+          <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-[#E5DFD3]">
+            <div className="w-12 h-12 border-4 border-[#E5DFD3] border-t-[#FFD000] rounded-full animate-spin mb-4" />
+            <p className="text-[#B8B0A0] font-black text-[10px] uppercase tracking-widest">Fetching Auctions...</p>
           </div>
         ) : is404 || auctions.length === 0 ? (
-          <div className="bg-white rounded-[2.5rem] p-24 text-center shadow-sm border border-slate-100">
-            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8">
-              <svg className="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-            </div>
-            <h3 className="text-2xl font-black text-slate-800 mb-3">No Auctions Found</h3>
-            <p className="text-slate-500 font-medium max-w-sm mx-auto">Try adjusting your filters or search terms.</p>
+          <div className="bg-white rounded-3xl p-20 text-center border border-[#E5DFD3]">
+            <div className="text-6xl mb-6">🔨</div>
+            <h3 className="text-2xl font-black text-[#111] mb-3">No Auctions Found</h3>
+            <p className="text-[#6B6557] font-medium max-w-sm mx-auto">Try adjusting your filters or search terms.</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {auctions.map((auction: any) => (
                 <AuctionCard
                   key={auction.id || auction.Id}
@@ -334,11 +327,13 @@ function AuctionsContent() {
         />
 
         {notification && (
-          <div className={`fixed bottom-8 right-8 p-4 rounded-xl shadow-2xl z-50 animate-bounce ${notification.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
-            <p className="font-bold flex items-center gap-2">
-              {notification.type === 'error' ? 'Oops!' : 'Success!'}
-              <span className="font-normal">{notification.msg}</span>
-            </p>
+          <div className={`fixed bottom-8 right-8 px-5 py-4 rounded-2xl shadow-2xl z-50 animate-slide-left flex items-center gap-3 max-w-sm text-sm font-bold border ${
+            notification.type === 'error'
+              ? 'bg-red-50 text-red-700 border-red-200'
+              : 'bg-[#FAF7F0] text-[#111] border-[#FFD000] shadow-[#FFD000]/20'
+          }`}>
+            <span className={`text-lg ${notification.type === 'error' ? '' : ''}`}>{notification.type === 'error' ? '❌' : '✅'}</span>
+            <span>{notification.msg}</span>
           </div>
         )}
       </main>
@@ -433,7 +428,7 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, 
 
   return (
     <div
-      className="premium-card bg-white rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-500 border border-slate-100 flex flex-col h-full relative group"
+      className="bg-white rounded-2xl overflow-hidden border border-[#E5DFD3] flex flex-col h-full relative group hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -451,20 +446,18 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, 
         </button>
       </div>
 
-      <div className="p-6 flex flex-col flex-1">
-        <div className="flex justify-between items-start mb-4">
-          <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${statusStyle}`}>
-            <span className="flex items-center gap-1">
-              {status === 'Live' && <span className="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span>}
-              {status}
-            </span>
+      <div className="p-5 flex flex-col flex-1">
+        <div className="flex justify-between items-start mb-3">
+          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusStyle}`}>
+            {status === 'Live' && <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />}
+            {status}
           </div>
           {isMine && (
-            <span className="px-2 py-1 bg-slate-900 text-white text-[9px] font-bold rounded shadow-sm">Your Auction</span>
+            <span className="px-2 py-1 bg-[#111] text-[#FAF7F0] text-[9px] font-black rounded-lg tracking-widest">MINE</span>
           )}
         </div>
 
-        <h3 className="text-xl font-black text-slate-900 mb-1 line-clamp-1" title={name}>{name}</h3>
+        <h3 className="text-lg font-black text-[#111] mb-1 line-clamp-1 group-hover:text-[#B8960C] transition-colors" title={name}>{name}</h3>
         {desc && (
           <ul className="text-slate-500 text-xs mb-4 flex-1 space-y-1">
             {desc.split(',').filter((p: string) => p.trim()).map((point: string, idx: number) => (
@@ -476,35 +469,29 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, 
           </ul>
         )}
 
-        <div className="space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100/50 flex-1">
-          {status
-            !== 'Upcoming' && (auction.currentHighestBid || auction.CurrentHighestBid) > 0 && (
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">{status == "Live" ? "Current Bid" : status == "Ended" ? "Final Price" : "Last Bid"}</span>
-                <span className="font-black text-brand-accent text-lg flex items-baseline gap-1">
-                  <span className="text-xs">₹</span>{(auction.currentHighestBid || auction.CurrentHighestBid || 0).toLocaleString()}
-                </span>
-              </div>
-            )}
-
+        <div className="space-y-2.5 mb-4 bg-[#FAF7F0] p-3.5 rounded-xl border border-[#E5DFD3] flex-1">
+          {status !== 'Upcoming' && (auction.currentHighestBid || auction.CurrentHighestBid) > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-[#B8B0A0] font-black text-[9px] uppercase tracking-widest">{status === 'Live' ? 'Current Bid' : status === 'Ended' ? 'Final Price' : 'Last Bid'}</span>
+              <span className="font-black text-[#111] text-base">₹{(auction.currentHighestBid || auction.CurrentHighestBid || 0).toLocaleString()}</span>
+            </div>
+          )}
           {(auction.startingPrice || auction.StartingPrice) > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Starting</span>
-              <span className="font-bold text-slate-700">₹{(auction.startingPrice || auction.StartingPrice).toLocaleString()}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-[#B8B0A0] font-black text-[9px] uppercase tracking-widest">Starting</span>
+              <span className="font-bold text-[#6B6557] text-sm">₹{(auction.startingPrice || auction.StartingPrice).toLocaleString()}</span>
             </div>
           )}
-
           {(auction.reservePrice || auction.ReservePrice) > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Reserve</span>
-              <span className="font-bold text-slate-700">₹{(auction.reservePrice || auction.ReservePrice).toLocaleString()}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-[#B8B0A0] font-black text-[9px] uppercase tracking-widest">Reserve</span>
+              <span className="font-bold text-[#6B6557] text-sm">₹{(auction.reservePrice || auction.ReservePrice).toLocaleString()}</span>
             </div>
           )}
-
           {status === 'Live' && (auction.totalBids || auction.TotalBids) > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Total Bids</span>
-              <span className="font-bold text-slate-700 px-2 py-0.5 bg-slate-200 rounded-md text-xs">{auction.totalBids || auction.TotalBids || 0}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-[#B8B0A0] font-black text-[9px] uppercase tracking-widest">Bids</span>
+              <span className="font-black text-[#111] bg-[#FFD000]/20 text-[#111] px-2 py-0.5 rounded-lg text-xs">{auction.totalBids || auction.TotalBids || 0}</span>
             </div>
           )}
         </div>
@@ -544,56 +531,36 @@ function AuctionCard({ auction, currentUser, onUpdate, onViewDetails, onLaunch, 
         </div>
 
         <div className="flex gap-2 mt-auto">
-          {/* Allow update for upcoming, verified, and cancelled auctions as per user request */}
           {isMine && (status === 'Upcoming' || status === 'Verified' || status === 'Cancelled') && (
-            <button onClick={onUpdate} className="flex-1 py-3 bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-200 hover:border-amber-500 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-              {status === 'Verified' ? 'Setup & Launch' : 'Update'}
+            <button onClick={onUpdate} className="flex-1 py-2.5 bg-[#FAF7F0] text-[#111] hover:bg-[#FFD000] border-2 border-[#E5DFD3] hover:border-[#FFD000] rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+              ✏️ {status === 'Verified' ? 'Launch' : 'Update'}
             </button>
           )}
-
           {canCancel && (
-            <button onClick={handleCancel} className="flex-1 py-3 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border border-red-200 hover:border-red-500 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              Cancel
+            <button onClick={handleCancel} className="flex-1 py-2.5 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white border-2 border-red-200 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+              ✕ Cancel
             </button>
           )}
-
           {!isMine && status === 'Upcoming' && (
-            <button onClick={handleWatch} disabled={isWatched} className={`flex-1 py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm border ${isWatched ? 'bg-brand-accent text-white border-brand-accent' : 'bg-slate-50 text-slate-600 hover:bg-brand-accent hover:text-white border-slate-200 hover:border-brand-accent'}`}>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              {isWatched ? 'Watched' : 'Watch'}
+            <button onClick={handleWatch} disabled={isWatched} className={`flex-1 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 border-2 ${isWatched ? 'bg-[#FFD000] text-[#111] border-[#FFD000]' : 'bg-white text-[#111] border-[#E5DFD3] hover:border-[#FFD000] hover:bg-[#FFD000]'}`}>
+              👁 {isWatched ? 'Watching' : 'Watch'}
             </button>
           )}
-
           {status === 'Live' && (
             <button
               onClick={async (e) => {
                 e.stopPropagation();
-                if (!isMine)
-                  if (!isWatched) {
-                    try {
-                      await api.post(`/api/Watchlist/${auction.id || auction.Id}/watch`, {}, false);
-                    } catch (err) { /* ignore */ }
-                  }
+                if (!isMine) if (!isWatched) { try { await api.post(`/api/Watchlist/${auction.id || auction.Id}/watch`, {}, false); } catch { } }
                 router.push(`/auction/${auction.id || auction.Id}`);
               }}
-              className="flex-1 py-3 bg-red-50 text-red-600 hover:bg-brand-accent hover:text-white border border-red-200 hover:border-brand-accent rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+              className="flex-1 py-2.5 bg-[#111] text-[#FAF7F0] hover:bg-[#FFD000] hover:text-[#111] border-2 border-[#111] hover:border-[#FFD000] rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-              {isMine ? 'View Auction' : 'Participate Now'}
+              ⚡ {isMine ? 'View Live' : 'Participate'}
             </button>
           )}
-
           {status === 'Ended' && (
-            <button
-              onClick={(e) => { e.stopPropagation(); router.push(`/auction/${auction.id || auction.Id}`); }}
-              className="flex-1 py-3 bg-slate-800 text-white hover:bg-slate-700 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm border border-slate-700"
-            >
-              View Winner
+            <button onClick={(e) => { e.stopPropagation(); router.push(`/auction/${auction.id || auction.Id}`); }} className="flex-1 py-2.5 bg-[#111] text-[#FAF7F0] rounded-xl font-black text-xs uppercase tracking-widest transition-all">
+              🏆 Winner
             </button>
           )}
         </div>
@@ -828,7 +795,7 @@ function ProductDetailsModal({ isOpen, product, onClose, currentUser, onLaunchAu
     setLoadingOwner(true);
     try {
       const userId = product.userId || product.user_id;
-      const res = await api.get(`/api/user/profile/${userId}`);
+      const res = await api.get(`/api/user/profile?id=${userId}`);
       if (res.success) {
         setOwnerInfo(res.data);
         setShowOwner(true);

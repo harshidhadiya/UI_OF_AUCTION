@@ -45,7 +45,7 @@ export default function ProductDetailsModal({ isOpen, product, onClose, currentU
     setLoadingOwner(true);
     try {
       const userId = product.userId || product.user_id;
-      const res = await api.get(`/api/user/profile/${userId}`);
+      const res = await api.get(`/api/user/profile?id=${userId}`);
       if (res.success) {
         setOwnerInfo(res.data);
         setShowOwner(true);

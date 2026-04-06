@@ -176,22 +176,22 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden pb-12">
+    <div className="min-h-screen bg-brand-light relative overflow-x-hidden pb-12">
       {/* Decorative background Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-slate-900/5 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
+      <div className="yellow-blob" />
+      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-brand-accent/10 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
 
       <AdminNavbar />
 
       <main className="max-w-7xl mx-auto px-4 md:px-8 pt-32 lg:pt-36 relative z-10">
 
         {/* Header Section */}
-        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 md:p-10 border border-white shadow-xl shadow-slate-200/50">
+        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10 p-8 md:p-10 -ml-4 -mr-4 md:m-0 md:rounded-[2.5rem] bg-white border border-border shadow-xl shadow-slate-200/50">
           <div className="relative z-10 w-full max-w-2xl">
-            <span className="inline-block py-1.5 px-3 rounded-xl bg-red-50 text-red-600 font-black text-[10px] uppercase tracking-widest mb-4 border border-red-100">
-              Admin Gateway
+            <span className="inline-block py-1.5 px-3 rounded-full bg-[#FFF9D6] text-amber-700 font-black text-[10px] uppercase tracking-widest mb-4 border border-[#FDE68A]">
+              ADMIN GATEWAY
             </span>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 leading-tight">
+            <h2 className="display-heading text-5xl md:text-6xl text-brand-dark mb-4 animate-text-reveal">
               {activeTab === 'pending' ? 'Pending Verifications' : activeTab === 'mine' ? 'My Verified Activity' : 'Verified Archive'}
             </h2>
             <p className="text-slate-500 font-medium text-lg leading-relaxed">
@@ -203,22 +203,22 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="flex bg-slate-100/80 p-1.5 rounded-[1.5rem] border border-slate-200/60 backdrop-blur-sm self-start shadow-inner">
+          <div className="flex bg-brand-light p-1.5 rounded-full border border-border self-start shadow-inner">
             <button
               onClick={() => { setActiveTab('pending'); handleClear(); }}
-              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${activeTab === 'pending' ? 'bg-white text-red-600 shadow-md shadow-slate-200/50 scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-full ${activeTab === 'pending' ? 'bg-white text-brand-dark shadow-md scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
             >
               Pending
             </button>
             <button
               onClick={() => { setActiveTab('mine'); handleClear(); }}
-              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${activeTab === 'mine' ? 'bg-white text-red-600 shadow-md shadow-slate-200/50 scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-full ${activeTab === 'mine' ? 'bg-white text-brand-dark shadow-md scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
             >
               My Verified
             </button>
             <button
               onClick={() => { setActiveTab('all'); handleClear(); }}
-              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${activeTab === 'all' ? 'bg-white text-red-600 shadow-md shadow-slate-200/50 scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all duration-300 rounded-full ${activeTab === 'all' ? 'bg-white text-brand-dark shadow-md scale-100' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 scale-95 hover:scale-100'}`}
             >
               All Verified
             </button>
@@ -226,33 +226,33 @@ export default function AdminDashboard() {
         </header>
 
         {/* Filter Bar */}
-        <div className="bg-white/90 backdrop-blur-sm p-6 pr-6 rounded-[2rem] shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-end relative z-20">
+        <div className="bg-white p-6 pr-6 rounded-[2rem] shadow-sm border border-border mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-end relative z-20">
           <div className="flex-1 min-w-[200px]">
             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Name / Identity</label>
-            <input type="text" value={searchName} onChange={e => setSearchName(e.target.value)} placeholder="Search by name" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
+            <input type="text" value={searchName} onChange={e => setSearchName(e.target.value)} placeholder="Search by name" className="premium-input" />
           </div>
           <div className="flex-1 min-w-[200px]">
             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Global Email</label>
-            <input type="text" value={searchEmail} onChange={e => setSearchEmail(e.target.value)} placeholder="Search by email" className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
+            <input type="text" value={searchEmail} onChange={e => setSearchEmail(e.target.value)} placeholder="Search by email" className="premium-input" />
           </div>
           {activeTab !== 'pending' && (
             <>
               <div className="flex-1 min-w-[150px]">
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">From Timeline</label>
-                <input type="date" value={searchFrom} onChange={e => setSearchFrom(e.target.value)} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
+                <input type="date" value={searchFrom} onChange={e => setSearchFrom(e.target.value)} className="premium-input" />
               </div>
               <div className="flex-1 min-w-[150px]">
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">To Timeline</label>
-                <input type="date" value={searchTo} onChange={e => setSearchTo(e.target.value)} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm" />
+                <input type="date" value={searchTo} onChange={e => setSearchTo(e.target.value)} className="premium-input" />
               </div>
             </>
           )}
           <div className="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
-            <button onClick={handleClear} className="px-6 py-3.5 bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-slate-200 transition-colors w-full md:w-auto active:scale-95">
-              Clear Filters
+            <button onClick={handleClear} className="premium-button bg-slate-100 text-slate-500 hover:bg-slate-200">
+              Clear
             </button>
-            <button onClick={handleSearch} className="px-8 py-3.5 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 w-full md:w-auto active:scale-95">
-              Execute Search
+            <button onClick={handleSearch} className="premium-button">
+              Search
             </button>
           </div>
         </div>

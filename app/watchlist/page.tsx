@@ -278,10 +278,10 @@ export default function WatchlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden pb-12">
+    <div className="min-h-screen bg-[#FAF7F0] relative overflow-x-hidden pb-12">
       {/* Decorative background Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-slate-900/5 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
+      <div className="yellow-blob" />
+      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-brand-accent/10 rounded-full blur-[80px] -translate-x-1/2 pointer-events-none" />
 
       {/* Toast Notification */}
       {toast && (
@@ -296,38 +296,26 @@ export default function WatchlistPage() {
 
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-32 lg:pt-36 relative z-10">
-        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-white/80 backdrop-blur-md rounded-[2.5rem] p-8 md:p-10 border border-white shadow-xl shadow-slate-200/50">
-          <div className="relative z-10 w-full max-w-2xl">
-            <span className="inline-block py-1.5 px-3 rounded-xl bg-sky-50 text-sky-600 font-black text-[10px] uppercase tracking-widest mb-4 border border-sky-100">
-              Personal Tracking
-            </span>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-4 leading-tight">My Watchlist</h2>
-            <p className="text-slate-500 font-medium text-lg leading-relaxed">Keep track of upcoming and currently live auctions you&apos;re interested in.</p>
+      <main className="max-w-7xl mx-auto px-6 md:px-8 pt-24 pb-4 relative z-10">
+        <header className="mb-10">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-2 h-2 bg-[#FFD000] rounded-full" />
+            <span className="text-[10px] font-black text-[#6B6557] uppercase tracking-widest">Personal Tracking</span>
           </div>
+          <h2 className="display-heading text-[#111]" style={{ fontSize: 'clamp(2.4rem,4.5vw,4.5rem)' }}>MY WATCHLIST.</h2>
+          <p className="text-[#6B6557] font-medium mt-2 max-w-lg">Keep track of upcoming and currently live auctions you&apos;re interested in.</p>
         </header>
 
         {/* Filters */}
-        <div className="bg-white/90 backdrop-blur-sm p-6 pr-6 rounded-[2rem] shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-end relative z-20">
-          <div className="flex flex-wrap gap-4 items-end w-full">
+        <div className="bg-white border border-[#E5DFD3] rounded-2xl p-5 mb-8 shadow-[0_2px_12px_rgba(0,0,0,0.05)]">
+          <div className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Product Name</label>
-              <input
-                type="text"
-                value={nameFilter}
-                onChange={e => { setNameFilter(e.target.value); setPage(1); }}
-                placeholder="Search watched auctions"
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm"
-              />
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Product Name</label>
+              <input type="text" value={nameFilter} onChange={e => { setNameFilter(e.target.value); setPage(1); }} placeholder="Search watched auctions" className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] focus:ring-4 focus:ring-[#FFD000]/10 outline-none transition-all text-sm text-[#111] font-medium" />
             </div>
-
-            <div className="flex-1 min-w-[150px]">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Status</label>
-              <select
-                value={statusFilter}
-                onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm"
-              >
+            <div className="flex-1 min-w-[140px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Status</label>
+              <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium">
                 <option value="">All Statuses</option>
                 <option value="Upcoming">Upcoming</option>
                 <option value="Live">Live</option>
@@ -336,38 +324,16 @@ export default function WatchlistPage() {
                 <option value="UnVerified">UnVerified</option>
               </select>
             </div>
-
-            <div className="flex-1 min-w-[150px]">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Start Date</label>
-              <input
-                type="date"
-                value={startDateFilter}
-                onChange={e => { setStartDateFilter(e.target.value); setPage(1); }}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm"
-              />
+            <div className="flex-1 min-w-[140px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">Start Date</label>
+              <input type="date" value={startDateFilter} onChange={e => { setStartDateFilter(e.target.value); setPage(1); }} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
             </div>
-
-            <div className="flex-1 min-w-[150px]">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">End Date</label>
-              <input
-                type="date"
-                value={endDateFilter}
-                onChange={e => { setEndDateFilter(e.target.value); setPage(1); }}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-slate-100 outline-none transition-all font-medium text-slate-700 text-sm"
-              />
+            <div className="flex-1 min-w-[140px]">
+              <label className="block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5">End Date</label>
+              <input type="date" value={endDateFilter} onChange={e => { setEndDateFilter(e.target.value); setPage(1); }} className="w-full px-4 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl focus:border-[#FFD000] outline-none text-sm text-[#111] font-medium" />
             </div>
-
             <div className="flex-none">
-              <button
-                onClick={() => {
-                  setNameFilter('');
-                  setStatusFilter('');
-                  setStartDateFilter('');
-                  setEndDateFilter('');
-                  setPage(1);
-                }}
-                className="px-8 py-3.5 bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-widest rounded-[1.25rem] hover:bg-slate-200 transition-colors w-full md:w-auto active:scale-95"
-              >
+              <button onClick={() => { setNameFilter(''); setStatusFilter(''); setStartDateFilter(''); setEndDateFilter(''); setPage(1); }} className="px-5 py-3 bg-[#FAF7F0] border-2 border-[#E5DFD3] text-[#6B6557] font-black text-xs uppercase tracking-widest rounded-xl hover:border-[#111] hover:text-[#111] transition-all">
                 Reset
               </button>
             </div>
@@ -375,18 +341,16 @@ export default function WatchlistPage() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 bg-white/50 backdrop-blur-md rounded-[3rem] shadow-sm border border-slate-100/50">
-            <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-6" />
-            <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Fetching your watchlist...</p>
+          <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-[#E5DFD3]">
+            <div className="w-12 h-12 border-4 border-[#E5DFD3] border-t-[#FFD000] rounded-full animate-spin mb-4" />
+            <p className="text-[#B8B0A0] font-black text-[10px] uppercase tracking-widest">Fetching Watchlist...</p>
           </div>
         ) : auctions.length === 0 ? (
-          <div className="bg-white/80 backdrop-blur-sm rounded-[3rem] p-24 text-center shadow-sm border border-slate-100 flex flex-col items-center">
-            <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner border border-slate-100">
-              <svg className="w-12 h-12 text-brand-accent/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-            </div>
-            <h3 className="text-2xl font-black text-slate-900 tracking-tighter mb-2">Your Watchlist is Empty</h3>
-            <p className="text-slate-500 font-medium text-lg max-w-sm mb-8">Click the Watch button on any upcoming auction to see it here.</p>
-            <button onClick={() => router.push('/auctions')} className="px-10 py-4 bg-brand-accent text-white font-black text-[10px] uppercase tracking-widest rounded-[1.5rem] shadow-xl shadow-brand-accent/20 hover:bg-brand-dark transition-all active:scale-95">
+          <div className="bg-white rounded-3xl p-20 text-center border border-[#E5DFD3] flex flex-col items-center">
+            <div className="text-6xl mb-6">👁</div>
+            <h3 className="text-2xl font-black text-[#111] mb-3">Your Watchlist is Empty</h3>
+            <p className="text-[#6B6557] font-medium max-w-sm mb-8">Click the Watch button on any upcoming auction to see it here.</p>
+            <button onClick={() => router.push('/auctions')} className="cta-button px-10 text-xs">
               Browse Auctions
             </button>
           </div>
@@ -513,7 +477,7 @@ function WatchedAuctionCard({ auction, onViewDetails, onUnwatch, viewerCount, rt
       try {
         const userId = auction.createdByUserId || auction.CreatedByUserId;
         if (!userId) return;
-        const res = await api.get(`/api/user/profile/${userId}`);
+        const res = await api.get(`/api/user/profile?id=${userId}`);
         if (res.success && res.data) setOwnerInfo(res.data);
       } catch (err) { console.error('Failed to fetch owner details', err); }
     };
@@ -780,7 +744,7 @@ function ProductDetailsModal({ isOpen, product, onClose, currentUser }: any) {
     setLoadingOwner(true);
     try {
       const userId = product.userId || product.user_id;
-      const res = await api.get(`/api/user/profile/${userId}`);
+      const res = await api.get(`/api/user/profile?id=${userId}`);
       if (res.success) { setOwnerInfo(res.data); setShowOwner(true); }
     } catch (err) { console.error('Failed to fetch owner details', err); }
     finally { setLoadingOwner(false); }

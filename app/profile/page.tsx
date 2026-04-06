@@ -47,7 +47,7 @@ export default function Profile() {
       if (user.role === 'ADMIN') {
         res = await api.get(`/api/admin/profile/?userid=${user.id}`);
       } else {
-        res = await api.get(`/api/user/profile/0`);
+        res = await api.get(`/api/user/profile`);
       }
 
       if (res.success) {
@@ -148,15 +148,15 @@ export default function Profile() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="w-10 h-10 border-4 border-brand-accent border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#FAF7F0]"><div className="w-10 h-10 border-4 border-[#E5DFD3] border-t-[#FFD000] rounded-full animate-spin" /></div>;
 
   const user = auth.getUser();
   const isAdmin = user?.role === 'ADMIN';
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden pb-12">
+    <div className="min-h-screen bg-brand-light relative overflow-x-hidden pb-12">
       {/* Decorative background Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-accent/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="yellow-blob" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-slate-900/5 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
 
       {isAdmin ? <AdminNavbar /> : <Navbar />}

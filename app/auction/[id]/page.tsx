@@ -69,7 +69,7 @@ export default function LiveAuctionPage() {
               const isOwnerOrWinner = a.createdByUserId === currentUserData.id || String(winnerId) === String(currentUserData.id);
 
               if (isOwnerOrWinner && winnerId) {
-                const userRes = await api.get(`/api/User/profile/${winnerId}`);
+                const userRes = await api.get(`/api/User/profile?id=${winnerId}`);
                 if (userRes.success && userRes.data) {
                   const userData = userRes.data as any;
                   winnerObj = {
@@ -396,23 +396,25 @@ export default function LiveAuctionPage() {
   return (
     <div className="min-h-screen bg-slate-950 relative overflow-x-hidden text-slate-100 pb-12">
       {auctionStartedToast && (
-        <div className="fixed top-24 right-4 md:right-8 z-[999] animate-in fade-in slide-in-from-top-8 duration-500">
-          <div className="bg-emerald-600 text-white rounded-[2rem] shadow-2xl shadow-emerald-500/30 border border-emerald-500 p-5 max-w-sm w-full">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-md shadow-inner">
-                <svg className="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+        <div className="fixed top-24 right-4 md:right-8 z-[999] animate-in fade-in slide-in-from-top-8 duration-500 pointer-events-auto">
+          <div className="w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-[1.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-[#E5DFD3] relative overflow-hidden flex">
+            <div className="w-2.5 bg-[#FFD000] shrink-0" />
+            <div className="flex-1 p-5 pr-4 flex gap-4">
+              <div className="w-12 h-12 bg-[#FAF7F0] rounded-xl flex items-center justify-center border border-[#FFD000]/30 shadow-[0_4px_14px_rgba(255,208,0,0.2)] shrink-0 text-xl">
+                🔥
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
-                <p className="font-black text-sm uppercase tracking-widest text-emerald-100 mb-1">Live Now!</p>
-                <p className="text-white font-bold text-lg leading-tight line-clamp-2">{auctionStartedToast.name}</p>
-                <button
-                  onClick={() => { router.push(`/auction/${auctionStartedToast.id}`); setAuctionStartedToast(null); }}
-                  className="mt-4 w-full py-2.5 bg-white text-emerald-700 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-emerald-50 hover:shadow-lg transition-all active:scale-95 p-3"
-                >
-                  Join Auction →
+                <div className="flex justify-between items-start gap-2 mb-1">
+                  <p className="font-black text-[10px] uppercase tracking-[0.2em] text-[#6B6557]">Live Now!</p>
+                  <button onClick={() => setAuctionStartedToast(null)} className="text-[#B8B0A0] hover:text-[#111] transition-colors -mt-1 -mr-1 p-1">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+                <p className="text-[#111] font-black text-[15px] leading-snug line-clamp-2 mb-4">{auctionStartedToast.name}</p>
+                <button onClick={() => { router.push(`/auction/${auctionStartedToast.id}`); setAuctionStartedToast(null); }} className="w-full py-3 bg-[#FFD000] text-[#111] font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#FFC800] transition-colors shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                  Join Live Auction →
                 </button>
               </div>
-              <button onClick={() => setAuctionStartedToast(null)} className="text-white/50 hover:text-white bg-black/10 hover:bg-black/20 rounded-full w-6 h-6 flex items-center justify-center transition-all mt-1">✕</button>
             </div>
           </div>
         </div>

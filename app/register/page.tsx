@@ -10,15 +10,14 @@ export default function Register() {
   const router = useRouter();
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [role, setRole] = useState<'USER' | 'ADMIN'>('USER');
+  const [error, setError]     = useState('');
+  const [role, setRole]       = useState<'USER' | 'ADMIN'>('USER');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // If already logged in, skip register page
+    setMounted(true);
     const user = auth.getUser();
-    if (user) {
-      router.replace(user.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard');
-    }
+    if (user) router.replace(user.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard');
   }, [router]);
 
   const onSubmit = async (data: any) => {
@@ -32,168 +31,164 @@ export default function Register() {
       formData.append('Phone', data.phone);
       formData.append('Address', data.address);
       formData.append('Role', role);
-      if (data.profileImage?.[0]) {
-        formData.append('file', data.profileImage[0]);
-      }
+      if (data.profileImage?.[0]) formData.append('file', data.profileImage[0]);
 
-      if (role === 'USER') {
-        const res = await api.post('/api/user/create', formData, true);
-        if (res.success) {
-          router.push('/login');
-        } else {
-          setError(res.message || 'Registration failed');
-        }
-      } else {
-        const res = await api.post('/api/admin/signup', formData, true);
-        if (res.success) {
-          router.push('/login');
-        } else {
-          setError(res.message || 'Registration failed');
-        }
-      }
-    } catch (err) {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+      const endpoint = role === 'USER' ? '/api/user/create' : '/api/admin/signup';
+      const res = await api.post(endpoint, formData, true);
+      if (res.success) router.push('/login');
+      else setError(res.message || 'Registration failed');
+    } catch { setError('Something went wrong. Please try again.'); }
+    finally { setLoading(false); }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-brand-accent/5 rounded-full blur-3xl opacity-50" />
-      <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-brand-accent/5 rounded-full blur-3xl opacity-50" />
+  const inputCls = 'w-full px-4 py-3.5 bg-[#FAF7F0] border-2 border-[#E5DFD3] rounded-xl outline-none focus:border-[#FFD000] focus:bg-white focus:ring-4 focus:ring-[#FFD000]/15 transition-all text-[#111] font-medium text-sm placeholder:text-[#B8B0A0]';
+  const labelCls = 'block text-[10px] font-black text-[#6B6557] uppercase tracking-widest mb-1.5';
 
-      <div className="w-full max-w-xl relative">
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-brand-accent rounded-2xl shadow-xl shadow-brand-accent/20 mb-4 transform rotate-6">
-            <span className="text-white text-2xl font-black">A</span>
+  return (
+    <div className="min-h-screen flex bg-[#FAF7F0] overflow-hidden">
+
+      {/* LEFT HERO */}
+      <div className="hidden lg:flex flex-col justify-between w-[48%] relative overflow-hidden p-12 xl:p-16">
+        <div className="yellow-blob animate-float-y" />
+
+        <div className={`relative z-10 flex items-center gap-2 ${mounted ? 'animate-slide-right' : 'opacity-0'}`}>
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-[#FFD000] rounded-xl flex items-center justify-center shadow-[0_4px_14px_rgba(255,208,0,0.45)]">
+              <span className="text-[#111] text-base font-black">A</span>
+            </div>
+            <span className="font-black text-[#111] text-lg lowercase">macuction</span>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Create Global Account</h1>
-          <p className="text-slate-500 font-medium text-sm">Join the most premium auction network.</p>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/40 p-8 md:p-10 border border-slate-100 backdrop-blur-sm bg-white/95">
-          {/* Role Switcher */}
-          <div className="flex p-1 bg-slate-100 rounded-2xl mb-8">
-            <button
-              onClick={() => { setRole('USER'); setError(''); }}
-              className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 ${role === 'USER' ? 'bg-white text-brand-accent shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+        <div className="relative z-10">
+          {['JOIN THE', 'PLATFORM.', 'START TODAY.'].map((line, i) => (
+            <div
+              key={i}
+              className={`display-heading text-[#111] ${mounted ? 'animate-text-reveal' : 'opacity-0'}`}
+              style={{ fontSize: 'clamp(2.8rem, 5vw, 5rem)', animationDelay: `${i * 120}ms` }}
             >
-              Auctioneer
-            </button>
-            <button
-              onClick={() => { setRole('ADMIN'); setError(''); }}
-              className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 ${role === 'ADMIN' ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Administrator
-            </button>
+              {line}
+            </div>
+          ))}
+          <p className={`mt-5 text-base text-[#6B6557] font-medium max-w-sm leading-relaxed ${mounted ? 'animate-slide-up animate-delay-4' : 'opacity-0'}`}>
+            Create your account in minutes. List products, bid on auctions, and track everything in one place.
+          </p>
+
+          {/* Feature chips */}
+          <div className={`flex flex-wrap gap-3 mt-8 ${mounted ? 'animate-slide-up animate-delay-5' : 'opacity-0'}`}>
+            {['Free to Join', 'Live Bidding', 'Instant Alerts', 'Secure Payments'].map((feat) => (
+              <span key={feat} className="px-3.5 py-1.5 bg-white/80 border border-[#E5DFD3] rounded-full text-[11px] font-black text-[#111] uppercase tracking-wide">
+                {feat}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className={`relative z-10 ${mounted ? 'animate-fade-in animate-delay-6' : 'opacity-0'}`}>
+          <p className="text-[10px] font-black text-[#B8B0A0] uppercase tracking-[0.2em]">Secure & Encrypted Platform</p>
+        </div>
+      </div>
+
+      {/* RIGHT FORM */}
+      <div className={`flex-1 flex flex-col justify-center items-center px-6 py-10 bg-white lg:shadow-[-20px_0_60px_rgba(0,0,0,0.06)] ${mounted ? 'animate-slide-left' : 'opacity-0'}`}>
+        <div className="w-full max-w-lg">
+
+          <div className="lg:hidden flex items-center gap-2 mb-6">
+            <div className="w-9 h-9 bg-[#FFD000] rounded-xl flex items-center justify-center">
+              <span className="text-[#111] font-black">A</span>
+            </div>
+            <span className="text-xl font-black text-[#111] lowercase">macuction</span>
+          </div>
+
+          <h1 className="text-3xl font-black text-[#111] tracking-tight mb-1">Create Account</h1>
+          <p className="text-[#6B6557] font-medium mb-6">Join the premium auction network today.</p>
+
+          {/* Role tabs */}
+          <div className="flex rounded-2xl overflow-hidden border-2 border-[#111] mb-7">
+            {(['USER', 'ADMIN'] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => { setRole(r); setError(''); }}
+                className={`flex-1 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${role === r ? 'bg-[#111] text-[#FAF7F0]' : 'bg-white text-[#6B6557] hover:bg-[#FAF7F0]'}`}
+              >
+                {r === 'USER' ? 'Auctioneer' : 'Administrator'}
+              </button>
+            ))}
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl mb-6 border border-red-100 text-xs font-bold animate-in fade-in slide-in-from-top-2 flex items-center gap-3">
+            <div className="bg-red-50 text-red-600 border border-red-200 rounded-xl p-3.5 mb-5 text-xs font-bold flex items-center gap-2 animate-slide-down">
               <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="col-span-1 md:col-span-2">
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Full Name</label>
-                <input
-                  {...register('name', { required: 'Name is required' })}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/5 transition-all font-medium text-slate-700"
-                  placeholder="Johnathan Doe"
-                />
-                {errors.name && <span className="text-red-500 text-[10px] font-black ml-1 uppercase tracking-wider block mt-1">{(errors.name as any).message}</span>}
-              </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <label className={labelCls}>Full Name</label>
+              <input {...register('name', { required: 'Name is required' })} className={inputCls} placeholder="Johnathan Doe" />
+              {errors.name && <p className="text-red-500 text-[10px] font-black mt-1 uppercase tracking-wider">{(errors.name as any).message}</p>}
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
-                <input
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
-                  })}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/5 transition-all font-medium text-slate-700"
-                  placeholder="john@example.com"
-                />
-                {errors.email && <span className="text-red-500 text-[10px] font-black ml-1 uppercase tracking-wider block mt-1">{(errors.email as any).message}</span>}
+                <label className={labelCls}>Email</label>
+                <input {...register('email', { required: 'Required', pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' } })} className={inputCls} placeholder="john@example.com" />
+                {errors.email && <p className="text-red-500 text-[10px] font-black mt-1">{(errors.email as any).message}</p>}
               </div>
-
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Secret Key (Password)</label>
-                <input
-                  {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Min 6 characters' } })}
-                  type="password"
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/5 transition-all font-medium text-slate-700"
-                  placeholder="••••••••"
-                />
-                {errors.password && <span className="text-red-500 text-[10px] font-black ml-1 uppercase tracking-wider block mt-1">{(errors.password as any).message}</span>}
+                <label className={labelCls}>Password</label>
+                <input {...register('password', { required: 'Required', minLength: { value: 6, message: 'Min 6 chars' } })} type="password" className={inputCls} placeholder="••••••••" />
+                {errors.password && <p className="text-red-500 text-[10px] font-black mt-1">{(errors.password as any).message}</p>}
               </div>
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Mobile Contact</label>
-                <input
-                  {...register('phone', { required: 'Mobile number is required' })}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/5 transition-all font-medium text-slate-700"
-                  placeholder="+91 98765 43210"
-                />
-                {errors.phone && <span className="text-red-500 text-[10px] font-black ml-1 uppercase tracking-wider block mt-1">{(errors.phone as any).message}</span>}
+                <label className={labelCls}>Phone</label>
+                <input {...register('phone', { required: 'Required' })} className={inputCls} placeholder="+91 98765 43210" />
+                {errors.phone && <p className="text-red-500 text-[10px] font-black mt-1">{(errors.phone as any).message}</p>}
               </div>
-
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Physical Address</label>
-                <input
-                  {...register('address', { required: 'Address is required' })}
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-brand-accent focus:ring-4 focus:ring-brand-accent/5 transition-all font-medium text-slate-700"
-                  placeholder="City, State, Country"
-                />
-                {errors.address && <span className="text-red-500 text-[10px] font-black ml-1 uppercase tracking-wider block mt-1">{(errors.address as any).message}</span>}
+                <label className={labelCls}>Address</label>
+                <input {...register('address', { required: 'Required' })} className={inputCls} placeholder="City, State" />
+                {errors.address && <p className="text-red-500 text-[10px] font-black mt-1">{(errors.address as any).message}</p>}
               </div>
+            </div>
 
-              <div className="col-span-1 md:col-span-2 space-y-2">
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Profile Identity (Image)</label>
-                <div className="relative group border-2 border-dashed border-slate-100 rounded-[1.5rem] p-4 hover:border-brand-accent/30 transition-all bg-slate-50/50">
-                  <input
-                    {...register('profileImage')}
-                    type="file"
-                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                    accept="image/*"
-                  />
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-slate-300 group-hover:text-brand-accent transition-colors">
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Select Image</p>
-                      <p className="text-[10px] text-slate-400 font-medium">PNG, JPG, SVG up to 5MB</p>
-                    </div>
-                  </div>
+            {/* Profile image upload */}
+            <div>
+              <label className={labelCls}>Profile Photo (optional)</label>
+              <label className="flex items-center gap-4 px-4 py-3.5 bg-[#FAF7F0] border-2 border-dashed border-[#E5DFD3] rounded-xl cursor-pointer hover:border-[#FFD000] transition-colors group">
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-[#E5DFD3] group-hover:border-[#FFD000] transition-colors">
+                  <svg className="w-5 h-5 text-[#B8B0A0] group-hover:text-[#FFD000] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                 </div>
-              </div>
+                <div>
+                  <p className="text-xs font-black text-[#6B6557] uppercase tracking-widest">Upload Photo</p>
+                  <p className="text-[10px] text-[#B8B0A0]">PNG, JPG up to 5MB</p>
+                </div>
+                <input {...register('profileImage')} type="file" accept="image/*" className="sr-only" />
+              </label>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-5 rounded-[1.25rem] font-black text-sm uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:grayscale mt-4 ${role === 'USER' ? 'bg-brand-accent text-white shadow-xl shadow-brand-accent/20 hover:bg-brand-accent/90' : 'bg-slate-900 text-white shadow-xl shadow-slate-900/20 hover:bg-slate-800'}`}
+              className="w-full cta-button h-14 text-sm mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  Establish Global Account
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                </>
-              )}
+              {loading
+                ? <><div className="w-4 h-4 border-2 border-[#111]/30 border-t-[#111] rounded-full animate-spin" />Creating Account...</>
+                : <>Create Account <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg></>
+              }
             </button>
           </form>
 
-          <div className="mt-8 pt-8 border-t border-slate-50 text-center">
-            <p className="text-sm text-slate-400 font-medium">
-              Already a member? <Link href="/login" className="text-brand-accent font-black hover:text-brand-accent/80 transition-colors underline-offset-4 decoration-2">Access Portal</Link>
+          <div className="mt-6 pt-5 border-t border-[#E5DFD3] text-center">
+            <p className="text-sm text-[#6B6557] font-medium">
+              Already a member?{' '}
+              <Link href="/login" className="text-[#111] font-black hover:text-[#FFD000] transition-colors underline underline-offset-2">
+                Sign In →
+              </Link>
             </p>
           </div>
         </div>

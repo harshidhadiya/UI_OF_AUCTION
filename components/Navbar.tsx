@@ -1,54 +1,70 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { BRAND_NAME } from '@/lib/constants';
 
 const NAV_LINKS = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/auctions', label: 'Auctions' },
-  { href: '/products', label: 'Products' },
-  { href: '/participations', label: 'Participation' },
-  { href: '/watchlist', label: 'Watchlist' },
-  { href: '/profile', label: 'Profile' },
+  { href: '/dashboard',      label: 'Dashboard' },
+  { href: '/auctions',       label: 'Auctions' },
+  { href: '/products',       label: 'Products' },
+  { href: '/participations', label: 'Bids' },
+  { href: '/watchlist',      label: 'Watchlist' },
+  { href: '/profile',        label: 'Profile' },
 ];
 
-const currentNotShows = ["/participations", "/auctions", "/watchlist"];
+const currentNotShows = ['/participations', '/auctions', '/watchlist'];
 
 export default function Navbar() {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
+  const [scrolled, setScrolled]     = useState(false);
+  const [menuOpen, setMenuOpen]     = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-4 left-0 right-0 w-full z-50 animate-in fade-in slide-in-from-top-4 duration-500 pointer-events-none px-4 md:px-8">
-      <div className="max-w-7xl mx-auto bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl shadow-slate-200/40 rounded-[2.5rem] pl-4 pr-6 py-3 flex justify-between items-center transition-all hover:bg-white/95 pointer-events-auto">
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-[#FAF7F0]/95 backdrop-blur-xl shadow-[0_2px_24px_rgba(0,0,0,0.08)]'
+          : 'bg-transparent'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between gap-4">
 
-        {/* Brand Area */}
+        {/* Brand */}
         <button
           onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-3 group active:scale-95 transition-all"
+          className="flex items-center gap-2.5 group shrink-0"
         >
-          <div className="w-10 h-10 bg-brand-accent rounded-2xl flex items-center justify-center shadow-lg shadow-brand-accent/20 group-hover:rotate-6 group-hover:scale-105 transition-all duration-300">
-            <span className="text-white text-[1.1rem] font-black leading-none mt-0.5">A</span>
+          <div className="w-9 h-9 bg-[#FFD000] rounded-xl flex items-center justify-center shadow-[0_4px_14px_rgba(255,208,0,0.45)] group-hover:rotate-6 group-hover:scale-105 transition-all duration-300">
+            <span className="text-[#111] text-base font-black leading-none">A</span>
           </div>
-          <span className="text-xl font-black text-slate-900 tracking-tighter hidden sm:block">{BRAND_NAME}</span>
+          <span className="text-[#111] text-lg font-black tracking-tight lowercase hidden sm:block">
+            {BRAND_NAME.toLowerCase()}
+          </span>
         </button>
 
-        {/* Navigation Core */}
-        <div className="hidden lg:flex items-center gap-1.5 p-1.5 bg-slate-50/80 rounded-[1.5rem] border border-slate-100/50 shadow-inner">
+        {/* Desktop Nav Pills */}
+        <div className="hidden lg:flex items-center gap-0.5 bg-black/5 rounded-2xl p-1.5">
           {NAV_LINKS.map((link) => {
-            if ("/dashboard" === pathname && currentNotShows.includes(link.href))
-              return null;
-
+            if ('/dashboard' === pathname && currentNotShows.includes(link.href)) return null;
             const isActive = pathname.startsWith(link.href);
             return (
               <button
                 key={link.href}
                 onClick={() => router.push(link.href)}
-                className={`px-4 py-2.5 rounded-xl text-[10px] uppercase font-black tracking-widest transition-all duration-300 ${isActive
-                  ? 'bg-white text-brand-accent shadow-sm scale-100'
-                  : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100/50 scale-95 hover:scale-100'
-                  }`}
+                className={`px-4 py-2 rounded-xl text-[11px] uppercase font-black tracking-widest transition-all duration-200 ${
+                  isActive
+                    ? 'bg-[#FFD000] text-[#111] shadow-sm'
+                    : 'text-[#6B6557] hover:text-[#111] hover:bg-white/70'
+                }`}
               >
                 {link.label}
               </button>
@@ -56,16 +72,54 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Right Action Area */}
-        <div className="flex items-center gap-3">
+        {/* Right actions */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => auth.logoutUser()}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-red-50 text-red-500 text-[10px] uppercase font-black tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-95"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-[#111] text-[#111] text-[10px] uppercase font-black tracking-widest hover:bg-[#111] hover:text-[#FAF7F0] transition-all active:scale-95"
           >
-            <span className="hidden sm:inline">Terminate</span>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            Sign Out
+          </button>
+
+          {/* Mobile hamburger */}
+          <button
+            className="lg:hidden flex flex-col gap-[5px] p-2 rounded-lg hover:bg-black/5 transition-colors"
+            onClick={() => setMenuOpen(v => !v)}
+            aria-label="Toggle menu"
+          >
+            <span className={`block w-5 h-0.5 bg-[#111] transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+            <span className={`block w-5 h-0.5 bg-[#111] transition-all duration-300 ${menuOpen ? 'opacity-0 w-0' : ''}`} />
+            <span className={`block w-5 h-0.5 bg-[#111] transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div
+        className={`lg:hidden overflow-hidden transition-all duration-300 ${
+          menuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        } bg-[#FAF7F0] border-t border-[#E5DFD3]`}
+      >
+        <div className="max-w-7xl mx-auto px-5 py-4 flex flex-col gap-1">
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname.startsWith(link.href);
+            return (
+              <button
+                key={link.href}
+                onClick={() => { router.push(link.href); setMenuOpen(false); }}
+                className={`text-left px-4 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-colors ${
+                  isActive ? 'bg-[#FFD000] text-[#111]' : 'text-[#6B6557] hover:bg-black/5'
+                }`}
+              >
+                {link.label}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => auth.logoutUser()}
+            className="mt-2 px-4 py-3 rounded-xl bg-[#111] text-[#FAF7F0] text-sm font-black uppercase tracking-widest text-left"
+          >
+            Sign Out
           </button>
         </div>
       </div>
